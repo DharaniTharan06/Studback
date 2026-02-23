@@ -1,5 +1,5 @@
 const asyncHandler = (requsetHandler) => {
-    (req,res,next) => {
+    return (req,res,next) => {
         Promise.resolve(requsetHandler(req,res,next)).catch((err) => next(err))
     }
 }
@@ -13,7 +13,7 @@ const asyncHandler = (requsetHandler) => {
             message: err.message
         })
     }
-}*/
+}this is a higher order function*/
 
 
 export default asyncHandler

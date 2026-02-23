@@ -20,6 +20,11 @@ app.use(express.urlencoded({
 app.use(express.static("public"))
 app.use(cookiesParser())
 
+//routes import
+import userRouter from "./routes/user.js"
+
+//routes declaration
+app.use("/api/v1/users",userRouter) //here /api/v1/users is a prefix , we add route in router file
 
 
-export default { app };
+export { app };
