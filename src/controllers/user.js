@@ -25,6 +25,12 @@ const registeruser = asyncHandler(async(req,res)=>{
     const avatarLocalPath = req.files?.avatar[0]?.path;
     const coverImageLocalPath = req.files?.coverimage[0]?.path;
 
+    if(!avatarLocalPath){
+        throw new apiError(400, "Avatar is required")
+    }
+
+    
+
     res.status(200).json({
         message: "First testing of postman"
     })
