@@ -1,12 +1,13 @@
 import { apiError } from "../utils/apiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import {User} from "../models/user.js"
+import { uploadtocloud } from "../utils/cloudinary.js";
+import { apiResponse } from "../utils/apiResponse.js";
 
 const registeruser = asyncHandler(async(req,res)=>{
 
     const {fullName , email , username , password} = req.body
     console.log(`email : ${email}`);
-
     if(
         [fullName , email , username , password].some((field)=>
         field?.trim === "")
@@ -29,11 +30,37 @@ const registeruser = asyncHandler(async(req,res)=>{
         throw new apiError(400, "Avatar is required")
     }
 
-    
+    const avatar = await uploadtocloud(avatarLocalPath)
+    const coverImage = await uploadtocloud(coverImageLocalPath)
 
-    res.status(200).json({
-        message: "First testing of postman"
+    if(!avatar){
+        throw new apiError(400, "Avatar is required")
+    }
+
+    const user = await User.create({
+        fullName,
+        avatar: avatar.url,
+        coverImage: coverImage?.url || "",
+        email,
+        password,
+        username: username.toLowerCase()
     })
+
+    const usercreated = await User.findById(user._id).select(
+        "-password -refreshtoken"
+    )
+
+    if(!usercreated){
+        throw new apiError(500,"Something went wrong while creating the user")
+    }
+
+    return res.status(201).json(
+        new apiResponse(200, usercreated, "User registered successfully")
+    )
+
+    // res.status(200).json({
+    //     message: "First testing of postman"
+    // })
 })
 
 export default registeruser
