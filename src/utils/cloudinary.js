@@ -16,8 +16,9 @@ const uploadtocloud = async (filepath) => {
         console.log("File is uploaded ",response)
         return response
     } catch (err) {
-        fs.unlinkSync(filepath)
-        return null
+        console.error("Cloudinary Upload Error:", err)
+        fs.unlinkSync(filepath);
+        throw err; 
     }
 } 
 
