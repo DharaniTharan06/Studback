@@ -3,7 +3,6 @@ import asyncHandler from "../utils/asyncHandler.js";
 import {User} from "../models/user.js"
 import { uploadtocloud } from "../utils/cloudinary.js";
 import { apiResponse } from "../utils/apiResponse.js";
-import fs from "fs";
 
 const registeruser = asyncHandler(async(req,res)=>{
 
