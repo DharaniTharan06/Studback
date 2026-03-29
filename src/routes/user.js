@@ -1,6 +1,7 @@
 import {Router} from "express"
-import registeruser from "../controllers/user.js"
+import {loginuser, logoutuser, registeruser} from "../controllers/user.js"
 import {upload} from "../middlewares/multer.js"
+import {verifyjwt} from "../middlewares/auth.js"
 
 const router = Router()
 
@@ -18,5 +19,15 @@ router.route("/register").post(
     ]),
     registeruser
 ) // this give /api/v1/users/register and in this url we have register logic
+
+router.route("/login").post(
+    loginuser
+)
+
+//Secured routes
+router.route("/logout").post(
+    verifyjwt,
+    logoutuser
+)
 
 export default router
