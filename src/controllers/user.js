@@ -85,7 +85,7 @@ const registeruser = asyncHandler(async(req,res)=>{
 const loginuser = asyncHandler(async(req,res)=>{
 
     const {email , username , password} = req.body
-    if(!username || !email){
+    if(!(username || email)){
         throw new apiError(400,"Username or email is required")
     }
 
