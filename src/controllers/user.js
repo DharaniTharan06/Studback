@@ -89,7 +89,7 @@ const loginuser = asyncHandler(async(req,res)=>{
         throw new apiError(400,"Username or email is required")
     }
 
-    const user = User.findOne({
+    const user = await User.findOne({
         $or: [{username}, {email}]
     })
 
@@ -97,7 +97,7 @@ const loginuser = asyncHandler(async(req,res)=>{
         throw new apiError(400,"User not found")
     }
 
-    const checkpwd = await user.isPasswordCorrect(password)
+    const checkpwd = await user.isPasswordCorrect (password)
     if(!checkpwd){
         throw new apiError(401,"Invalid password")
     }
