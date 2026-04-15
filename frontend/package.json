@@ -11,7 +11,12 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "latest",
+    "@radix-ui/react-dropdown-menu": "latest",
+    "@radix-ui/react-slot": "latest",
+    "@radix-ui/react-tooltip": "latest",
     "next": "latest",
+    "radix-ui": "^1.7.0",
     "react": "latest",
     "react-dom": "latest"
   },
