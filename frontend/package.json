@@ -18,6 +18,9 @@
     "@radix-ui/react-tooltip": "latest",
     "@tanstack/react-query": "^5.0.0",
     "axios": "^1.0.0",
+    "class-variance-authority": "latest",
+    "clsx": "latest",
+    "lucide-react": "latest",
     "next": "latest",
     "next-themes": "latest",
     "radix-ui": "^1.7.0",
@@ -25,6 +28,7 @@
     "react-dom": "latest",
     "react-hook-form": "^7.0.0",
     "sonner": "latest",
+    "tailwind-merge": "latest",
     "zod": "^4.0.0"
   },
   "devDependencies": {
