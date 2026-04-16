@@ -19,10 +19,12 @@
     "@tanstack/react-query": "^5.0.0",
     "axios": "^1.0.0",
     "next": "latest",
+    "next-themes": "latest",
     "radix-ui": "^1.7.0",
     "react": "latest",
     "react-dom": "latest",
     "react-hook-form": "^7.0.0",
+    "sonner": "latest",
     "zod": "^4.0.0"
   },
   "devDependencies": {
