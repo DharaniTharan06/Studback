@@ -1,0 +1,73 @@
+@import "tailwindcss";
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+:root {
+  color-scheme: light;
+  --background: #f7f6f2;
+  --foreground: #202126;
+  --surface: #fdfcf9;
+  --surface-elevated: #ffffff;
+  --muted: #ecebe6;
+  --muted-foreground: #62646e;
+  --border: #deded7;
+  --scrollbar-thumb: #b8b5c5;
+  --scrollbar-thumb-hover: #8c879f;
+  --primary: #5143cc;
+  --primary-foreground: #ffffff;
+  --accent: #e9e6fb;
+  --accent-foreground: #4336b0;
+  --destructive: #b32739;
+  --destructive-foreground: #fff;
+  --ring: #6758d9;
+  --success: #177552;
+  --shadow: 0 8px 36px #2823240d;
+  --ambient: #eeebff;
+  --overlay: #17141f66;
+  --player-background: #101115;
+  --player-foreground: #fafafa;
+  --player-overlay: #000000bb;
+  --radius: 0.7rem;
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #121316;
+  --foreground: #f0f0f2;
+  --surface: #191a1f;
+  --surface-elevated: #24252c;
+  --muted: #24252b;
+  --muted-foreground: #a2a3af;
+  --border: #ffffff14;
+  --scrollbar-thumb: #55515f;
+  --scrollbar-thumb-hover: #817a93;
+  --primary: #aaa0ff;
+  --primary-foreground: #211b4b;
+  --accent: #2c2748;
+  --accent-foreground: #c0b9ff;
+  --destructive: #ff8995;
+  --destructive-foreground: #3c1119;
+  --ring: #aaa0ff;
+  --success: #6fdab3;
+  --shadow: 0 8px 36px #00000030;
+  --ambient: #201d33;
+  --overlay: #00000099;
+}
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-scrollbar-thumb: var(--scrollbar-thumb);
+  --color-scrollbar-thumb-hover: var(--scrollbar-thumb-hover);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --font-sans: var(--font-geist);
+  --color-player-foreground: var(--player-foreground);
+}
