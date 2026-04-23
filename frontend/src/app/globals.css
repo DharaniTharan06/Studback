@@ -71,3 +71,85 @@
   --font-sans: var(--font-geist);
   --color-player-foreground: var(--player-foreground);
 }
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+}
+html {
+  background: var(--background);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border: 2px solid var(--background);
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+[data-slot="sheet-content"][data-side="left"][data-state="open"] {
+  animation: sheet-slide-in 180ms ease-out;
+}
+[data-slot="sheet-content"][data-side="left"][data-state="closed"] {
+  animation: sheet-slide-out 140ms ease-in;
+}
+@keyframes sheet-slide-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes sheet-slide-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist), Arial, sans-serif;
+}
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+button:not(:disabled),
+select {
+  cursor: pointer;
+}
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
+}
+::selection {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+input,
+textarea,
+select {
+  color: var(--foreground);
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted-foreground);
+}
