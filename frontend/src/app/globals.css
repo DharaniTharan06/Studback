@@ -153,3 +153,72 @@ input::placeholder,
 textarea::placeholder {
   color: var(--muted-foreground);
 }
+.theme-transition body,
+.theme-transition header,
+.theme-transition aside,
+.theme-transition main {
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
+}
+.ambient {
+  background:
+    radial-gradient(ellipse at 90% 0%, var(--ambient), transparent 65%),
+    var(--surface);
+}
+.page-wrap {
+  width: 100%;
+  max-width: 1680px;
+  margin-inline: auto;
+  padding: 32px 36px 80px;
+}
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px 22px;
+}
+.input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  padding: 11px 13px;
+  font-size: 14px;
+}
+.input:focus {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.input:disabled {
+  opacity: 0.55;
+}
+.field {
+  display: grid;
+  gap: 8px;
+}
+.field > span {
+  font-size: 13px;
+  font-weight: 550;
+}
+.field-error {
+  color: var(--destructive);
+  font-size: 12px;
+}
+.eyebrow {
+  color: var(--muted-foreground);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.skeleton {
+  background: var(--muted);
+  border-radius: 8px;
+  animation: pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
