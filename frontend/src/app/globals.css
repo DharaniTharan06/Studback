@@ -222,3 +222,50 @@ textarea::placeholder {
     opacity: 0.5;
   }
 }
+.player {
+  background: var(--player-background);
+  color: var(--player-foreground);
+}
+.player-controls {
+  background: linear-gradient(transparent, var(--player-overlay));
+}
+.duration-badge {
+  background: var(--player-overlay);
+  color: var(--player-foreground);
+}
+[data-sonner-toaster] {
+  --normal-bg: var(--surface-elevated) !important;
+  --normal-text: var(--foreground) !important;
+  --normal-border: var(--border) !important;
+}
+@media (min-width: 1800px) {
+  .video-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1150px) {
+  .video-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .page-wrap {
+    padding-inline: 24px;
+  }
+}
+@media (max-width: 640px) {
+  .video-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .page-wrap {
+    padding: 24px 16px 100px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
