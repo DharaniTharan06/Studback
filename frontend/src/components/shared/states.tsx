@@ -57,3 +57,46 @@ export function ErrorState({
     </div>
   );
 }
+export function VideoSkeletons({ amount = 6 }: { amount?: number }) {
+  return (
+    <div className="video-grid" aria-label="Loading videos" role="status">
+      {Array.from({ length: amount }, (_, i) => (
+        <div key={i}>
+          <div className="skeleton aspect-video" />
+          <div className="mt-4 flex gap-3">
+            <div className="skeleton size-9 shrink-0 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <div className="skeleton h-4 w-5/6" />
+              <div className="skeleton h-3 w-3/5" />
+              <div className="skeleton h-3 w-2/5" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+export function PageHeading({
+  eyebrow,
+  title,
+  description,
+  children,
+}: {
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
+      <div>
+        {eyebrow && <p className="eyebrow mb-2">{eyebrow}</p>}
+        <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
+        {description && (
+          <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
