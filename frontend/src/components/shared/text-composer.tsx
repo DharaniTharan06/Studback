@@ -3,7 +3,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-
+import { Dialog } from "@/components/ui/dialog";
 const schema = z.object({
   content: z
     .string()
@@ -78,5 +78,36 @@ export function TextComposer({
         </p>
       )}
     </form>
+  );
+}
+export function EditTextDialog({
+  open,
+  onOpenChange,
+  content,
+  onSave,
+}: {
+  open: boolean;
+  onOpenChange: (value: boolean) => void;
+  content: string;
+  onSave: (content: string) => Promise<void>;
+}) {
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Edit your message"
+      description="Make a change to what you shared."
+    >
+      <TextComposer
+        key={content}
+        initial={content}
+        placeholder="Your message"
+        label="Save changes"
+        onSubmit={async (value) => {
+          await onSave(value);
+          onOpenChange(false);
+        }}
+      />
+    </Dialog>
   );
 }
