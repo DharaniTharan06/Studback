@@ -1,8 +1,8 @@
-import { apiError } from "../utils/apiError.js";
+import { apiError } from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import {User} from "../models/user.js"
 import { uploadtocloud } from "../utils/cloudinary.js";
-import { apiResponse } from "../utils/apiResponse.js";
+import { apiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose";
 
@@ -187,7 +187,7 @@ const refreshAccessToken = asyncHandler(async(req,res)=>{
             httpOnly: true,
             secure: true
         }
-        const {accesstoken , newrefreshtoken} = await generateTokens(user._id)
+        const {accesstoken , refreshtoken: newrefreshtoken} = await generateTokens(user._id)
     
         return res
         .status(200)
