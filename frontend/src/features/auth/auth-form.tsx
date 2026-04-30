@@ -1,11 +1,11 @@
 "use client";
-
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { loginSchema } from "./schemas";
@@ -70,6 +70,18 @@ export function LoginForm() {
             {...register("password")}
             aria-invalid={!!errors.password}
           />
+          <button
+            type="button"
+            aria-label={visible ? "Hide password" : "Show password"}
+            className="absolute top-3 right-3 text-muted-foreground"
+            onClick={() => setVisible((value) => !value)}
+          >
+            {visible ? (
+              <EyeOff className="size-5" />
+            ) : (
+              <Eye className="size-5" />
+            )}
+          </button>
         </span>
         {errors.password && (
           <small className="field-error">{errors.password.message}</small>
@@ -84,6 +96,12 @@ export function LoginForm() {
         {isSubmitting ? "Signing you in…" : "Sign in"}
         <ArrowRight />
       </Button>
+      <p className="pt-2 text-center text-sm text-muted-foreground">
+        New around here?{" "}
+        <Link href="/register" className="font-medium text-primary">
+          Create an account
+        </Link>
+      </p>
     </form>
   );
 }
