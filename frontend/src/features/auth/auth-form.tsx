@@ -8,12 +8,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { loginSchema } from "./schemas";
+import { loginSchema, registerSchema } from "./schemas";
 import { authKey } from "./queries";
 import type { User } from "./types";
 import { post } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
-
+import { FileField } from "@/components/shared/file-field";
 export function LoginForm() {
   const router = useRouter();
   const client = useQueryClient();
@@ -102,6 +102,102 @@ export function LoginForm() {
           Create an account
         </Link>
       </p>
+    </form>
+  );
+}
+export function RegisterForm() {
+  const [avatar, setAvatar] = useState<File | null>(null);
+  const router = useRouter();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+  } = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
+  });
+  return (
+    <form
+      className="space-y-4"
+      onSubmit={handleSubmit(async (values) => {
+        if (!avatar) {
+          setError("root", {
+            message: "Choose an avatar to make your profile your own",
+          });
+          return;
+        }
+        const form = new FormData();
+        Object.entries(values).forEach(([key, value]) =>
+          form.append(key, value)
+        );
+        form.append("avatar", avatar);
+        try {
+          await post("/users/register", form);
+          toast.success("Your account is ready. Sign in to get started.");
+          router.push("/login");
+        } catch (error) {
+          setError("root", {
+            message:
+              error instanceof Error
+                ? error.message
+                : "Couldn’t create your account",
+          });
+        }
+      })}
+    >
+      {(["fullname", "username", "email", "password"] as const).map((name) => (
+        <label key={name} className="field">
+          <span>
+            {
+              {
+                fullname: "Full name",
+                username: "Username",
+                email: "Email address",
+                password: "Password",
+              }[name]
+            }
+          </span>
+          <input
+            className="input"
+            type={
+              name === "password"
+                ? "password"
+                : name === "email"
+                  ? "email"
+                  : "text"
+            }
+            autoComplete={
+              {
+                fullname: "name",
+                username: "username",
+                email: "email",
+                password: "new-password",
+              }[name]
+            }
+            {...register(name)}
+            aria-invalid={!!errors[name]}
+          />
+          {errors[name] && (
+            <small className="field-error">{errors[name]?.message}</small>
+          )}
+        </label>
+      ))}
+      <FileField
+        label="Your avatar"
+        accept="image/*"
+        file={avatar}
+        onChange={setAvatar}
+        required
+      />
+      {errors.root && (
+        <p role="alert" className="field-error">
+          {errors.root.message}
+        </p>
+      )}
+      <Button type="submit" disabled={isSubmitting} className="w-full">
+        {isSubmitting ? "Creating your account…" : "Create account"}
+        <ArrowRight />
+      </Button>
     </form>
   );
 }
