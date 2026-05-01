@@ -107,6 +107,7 @@ export function LoginForm() {
 }
 export function RegisterForm() {
   const [avatar, setAvatar] = useState<File | null>(null);
+  const [cover, setCover] = useState<File | null>(null);
   const router = useRouter();
   const {
     register,
@@ -131,6 +132,7 @@ export function RegisterForm() {
           form.append(key, value)
         );
         form.append("avatar", avatar);
+        if (cover) form.append("coverImage", cover);
         try {
           await post("/users/register", form);
           toast.success("Your account is ready. Sign in to get started.");
@@ -188,7 +190,22 @@ export function RegisterForm() {
         file={avatar}
         onChange={setAvatar}
         required
+        disabled={isSubmitting}
       />
+      <details>
+        <summary className="cursor-pointer text-xs text-muted-foreground">
+          Add a cover image (optional)
+        </summary>
+        <div className="mt-3">
+          <FileField
+            label="Cover image"
+            accept="image/*"
+            file={cover}
+            onChange={setCover}
+            disabled={isSubmitting}
+          />
+        </div>
+      </details>
       {errors.root && (
         <p role="alert" className="field-error">
           {errors.root.message}
@@ -198,6 +215,12 @@ export function RegisterForm() {
         {isSubmitting ? "Creating your account…" : "Create account"}
         <ArrowRight />
       </Button>
+      <p className="text-center text-sm text-muted-foreground">
+        Already a member?{" "}
+        <Link href="/login" className="font-medium text-primary">
+          Sign in
+        </Link>
+      </p>
     </form>
   );
 }
