@@ -6,8 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useUser, authKey } from "./queries";
-import { profileSchema } from "./schemas";
-import { patch } from "@/lib/api/client";
+import { profileSchema, passwordSchema } from "./schemas";
+import { patch, post } from "@/lib/api/client";
 import { channelKeys } from "@/features/channels/queries";
 
 import { Avatar } from "@/components/shared/avatar";
@@ -81,6 +81,75 @@ function ProfileForm() {
       )}
       <Button type="submit" disabled={isSubmitting}>
         {isSubmitting ? "Saving…" : "Save changes"}
+      </Button>
+    </form>
+  );
+}
+function SecurityForm() {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<z.infer<typeof passwordSchema>>({
+    resolver: zodResolver(passwordSchema),
+  });
+  return (
+    <form
+      className="max-w-xl space-y-5"
+      onSubmit={handleSubmit(async (values) => {
+        try {
+          await post("/users/change-pwd", values);
+          reset();
+          toast.success("Password changed");
+        } catch (error) {
+          setError("root", {
+            message:
+              error instanceof Error
+                ? error.message
+                : "Couldn’t change password",
+          });
+        }
+      })}
+    >
+      <h2 className="text-lg font-semibold">A little peace of mind.</h2>
+      <p className="text-sm leading-6 text-muted-foreground">
+        Use a strong password that you don’t use anywhere else.
+      </p>
+      {(["oldPassword", "newPassword", "confirmpassword"] as const).map(
+        (name) => (
+          <label className="field" key={name}>
+            <span>
+              {
+                {
+                  oldPassword: "Current password",
+                  newPassword: "New password",
+                  confirmpassword: "Confirm new password",
+                }[name]
+              }
+            </span>
+            <input
+              className="input"
+              type="password"
+              autoComplete={
+                name === "oldPassword" ? "current-password" : "new-password"
+              }
+              {...register(name)}
+            />
+            {errors[name] && (
+              <small className="field-error">{errors[name]?.message}</small>
+            )}
+          </label>
+        )
+      )}
+      {errors.root && (
+        <p role="alert" className="field-error">
+          {errors.root.message}
+        </p>
+      )}
+      <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "Updating…" : "Update password"}
       </Button>
     </form>
   );
