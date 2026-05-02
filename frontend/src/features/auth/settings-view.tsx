@@ -1,5 +1,5 @@
 "use client";
-
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,7 +11,7 @@ import { patch, post } from "@/lib/api/client";
 import { channelKeys } from "@/features/channels/queries";
 
 import { Avatar } from "@/components/shared/avatar";
-
+import { FileField } from "@/components/shared/file-field";
 import { Button } from "@/components/ui/button";
 
 function ProfileForm() {
@@ -150,6 +150,69 @@ function SecurityForm() {
       )}
       <Button type="submit" disabled={isSubmitting}>
         {isSubmitting ? "Updating…" : "Update password"}
+      </Button>
+    </form>
+  );
+}
+function BrandingForm() {
+  const [avatar, setAvatar] = useState<File | null>(null);
+  const [cover, setCover] = useState<File | null>(null);
+  const [pending, setPending] = useState(false);
+  const client = useQueryClient();
+  return (
+    <form
+      className="max-w-xl space-y-6"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        setPending(true);
+        try {
+          if (avatar) {
+            const form = new FormData();
+            form.append("avatar", avatar);
+            await patch("/users/update/avatar", form);
+            setAvatar(null);
+            toast.success("Avatar updated");
+          }
+          if (cover) {
+            const form = new FormData();
+            form.append("coverimage", cover);
+            await patch("/users/update/cover-image", form);
+            setCover(null);
+            toast.success("Cover image updated");
+          }
+        } catch (error) {
+          toast.error(
+            error instanceof Error ? error.message : "Couldn’t update branding"
+          );
+        } finally {
+          await Promise.all([
+            client.invalidateQueries({ queryKey: authKey }),
+            client.invalidateQueries({ queryKey: channelKeys.all }),
+          ]);
+          setPending(false);
+        }
+      }}
+    >
+      <h2 className="text-lg font-semibold">A look that’s all yours.</h2>
+      <p className="text-sm text-muted-foreground">
+        Let your channel look as distinctive as your perspective.
+      </p>
+      <FileField
+        label="Avatar"
+        accept="image/*"
+        file={avatar}
+        onChange={setAvatar}
+        disabled={pending}
+      />
+      <FileField
+        label="Channel cover image"
+        accept="image/*"
+        file={cover}
+        onChange={setCover}
+        disabled={pending}
+      />
+      <Button type="submit" disabled={pending || (!avatar && !cover)}>
+        {pending ? "Uploading…" : "Update branding"}
       </Button>
     </form>
   );
