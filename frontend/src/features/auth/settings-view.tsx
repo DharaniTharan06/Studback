@@ -9,11 +9,11 @@ import { useUser, authKey } from "./queries";
 import { profileSchema, passwordSchema } from "./schemas";
 import { patch, post } from "@/lib/api/client";
 import { channelKeys } from "@/features/channels/queries";
-
+import { PageHeading } from "@/components/shared/states";
 import { Avatar } from "@/components/shared/avatar";
 import { FileField } from "@/components/shared/file-field";
 import { Button } from "@/components/ui/button";
-
+import { TabBar } from "@/components/ui/tab-bar";
 function ProfileForm() {
   const { data: user } = useUser();
   const client = useQueryClient();
@@ -215,5 +215,37 @@ function BrandingForm() {
         {pending ? "Uploading…" : "Update branding"}
       </Button>
     </form>
+  );
+}
+export function SettingsView() {
+  const [tab, setTab] = useState("Profile");
+  return (
+    <>
+      <PageHeading
+        eyebrow="Your account"
+        title="Make yourself at home."
+        description="A few details that make Studback feel like you."
+      />
+      <TabBar
+        values={["Profile", "Branding", "Security"]}
+        value={tab}
+        onValueChange={setTab}
+        label="Account settings"
+        prefix="settings"
+      />
+      <section
+        id="settings-panel"
+        role="tabpanel"
+        aria-labelledby={`settings-tab-${tab}`}
+      >
+        {tab === "Profile" ? (
+          <ProfileForm />
+        ) : tab === "Branding" ? (
+          <BrandingForm />
+        ) : (
+          <SecurityForm />
+        )}
+      </section>
+    </>
   );
 }
