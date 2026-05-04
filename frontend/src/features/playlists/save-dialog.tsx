@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, ListVideo } from "lucide-react";
-
+import { toast } from "sonner";
 import { useUser } from "@/features/auth/queries";
 import { patch } from "@/lib/api/client";
 import { Dialog } from "@/components/ui/dialog";
@@ -33,6 +33,31 @@ export function SavePlaylistDialog({
   const mutation = useMutation({
     mutationFn: ({ playlist, saved }: { playlist: Playlist; saved: boolean }) =>
       patch(`/playlist/${saved ? "remove" : "add"}/${videoId}/${playlist._id}`),
+    onMutate: async ({ playlist, saved }) => {
+      await client.cancelQueries({ queryKey: key });
+      const previous = client.getQueryData<Playlist[]>(key);
+      client.setQueryData<Playlist[]>(key, (list) =>
+        list?.map((item) =>
+          item._id === playlist._id
+            ? {
+                ...item,
+                videos: saved
+                  ? item.videos.filter(
+                      (video) =>
+                        (typeof video === "string" ? video : video?._id) !==
+                        videoId
+                    )
+                  : [...item.videos, videoId],
+              }
+            : item
+        )
+      );
+      return { previous };
+    },
+    onError: (error, _, context) => {
+      client.setQueryData(key, context?.previous);
+      toast.error(error.message);
+    },
     onSettled: () => client.invalidateQueries({ queryKey: playlistKeys.all }),
   });
   return (
