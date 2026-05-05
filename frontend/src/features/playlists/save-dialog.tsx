@@ -1,15 +1,15 @@
 "use client";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, ListVideo } from "lucide-react";
+import { Plus, Check, ListVideo } from "lucide-react";
 import { toast } from "sonner";
 import { useUser } from "@/features/auth/queries";
 import { patch } from "@/lib/api/client";
 import { Dialog } from "@/components/ui/dialog";
-
+import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/shared/states";
 import { usePlaylists, playlistKeys } from "./queries";
-
+import { PlaylistForm } from "./playlist-form";
 import type { Playlist } from "./types";
 function contains(playlist: Playlist, id: string) {
   return playlist.videos.some((video) =>
@@ -100,7 +100,19 @@ export function SavePlaylistDialog({
             })}
           </div>
         )}
+        <Button
+          variant="outline"
+          className="mt-5 w-full"
+          onClick={() => {
+            onOpenChange(false);
+            setCreate(true);
+          }}
+        >
+          <Plus />
+          New playlist
+        </Button>
       </Dialog>
+      <PlaylistForm open={create} onOpenChange={setCreate} />
     </>
   );
 }
