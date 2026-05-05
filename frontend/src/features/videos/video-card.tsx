@@ -1,13 +1,15 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { Play } from "lucide-react";
+import { MoreHorizontal, ListPlus, Link as LinkIcon, Play } from "lucide-react";
 import { useState } from "react";
-
+import { toast } from "sonner";
 import type { Video } from "./types";
 import { count, duration, relativeTime, safeMediaUrl } from "@/lib/utils";
 import { Avatar } from "@/components/shared/avatar";
-
+import { Dropdown, MenuContent, menuItemClass } from "@/components/ui/menu";
+import { Button } from "@/components/ui/button";
+import { SavePlaylistDialog } from "@/features/playlists/save-dialog";
 export function VideoCard({
   video,
   playlistId,
@@ -73,7 +75,49 @@ export function VideoCard({
             {video.createdAt ? ` · ${relativeTime(video.createdAt)}` : ""}
           </p>
         </div>
+        <Dropdown.Root>
+          <Dropdown.Trigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 min-h-7"
+              aria-label={`Actions for ${video.title}`}
+            >
+              <MoreHorizontal />
+            </Button>
+          </Dropdown.Trigger>
+          <MenuContent>
+            <Dropdown.Item
+              className={menuItemClass}
+              onSelect={() => setSave(true)}
+            >
+              <ListPlus />
+              Save to playlist
+            </Dropdown.Item>
+            <Dropdown.Item
+              className={menuItemClass}
+              onSelect={async () => {
+                try {
+                  await navigator.clipboard.writeText(
+                    `${location.origin}/watch/${video._id}`
+                  );
+                  toast.success("Video link copied");
+                } catch {
+                  toast.error("Your browser couldn’t copy the link");
+                }
+              }}
+            >
+              <LinkIcon />
+              Copy link
+            </Dropdown.Item>
+          </MenuContent>
+        </Dropdown.Root>
       </div>
+      <SavePlaylistDialog
+        videoId={video._id}
+        open={save}
+        onOpenChange={setSave}
+      />
     </article>
   );
 }
