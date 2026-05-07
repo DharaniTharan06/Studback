@@ -1,16 +1,17 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { Play, ListVideo } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Play, Pencil, Trash2, ListVideo, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-
-import { usePlaylist } from "./queries";
-
+import { toast } from "sonner";
+import { usePlaylist, playlistKeys } from "./queries";
+import { PlaylistForm } from "./playlist-form";
 import { useUser } from "@/features/auth/queries";
 import { ownerId } from "@/features/videos/types";
 import { VideoCard } from "@/features/videos/video-card";
-
+import { remove, patch } from "@/lib/api/client";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { EmptyState, ErrorState } from "@/components/shared/states";
 export function PlaylistView({ id }: { id: string }) {
@@ -20,6 +21,23 @@ export function PlaylistView({ id }: { id: string }) {
   const router = useRouter();
   const [edit, setEdit] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const deletion = useMutation({
+    mutationFn: () => remove(`/playlist/${id}`),
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: playlistKeys.all });
+      router.push("/playlists");
+      toast.success("Playlist deleted");
+    },
+    onError: (error) => toast.error(error.message),
+  });
+  const removal = useMutation({
+    mutationFn: (videoId: string) => patch(`/playlist/remove/${videoId}/${id}`),
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: playlistKeys.all });
+      toast.success("Video removed from playlist");
+    },
+    onError: (error) => toast.error(error.message),
+  });
   if (query.isPending)
     return (
       <div
@@ -63,6 +81,21 @@ export function PlaylistView({ id }: { id: string }) {
               </Link>
             </Button>
           )}
+          {own && (
+            <>
+              <Button variant="outline" onClick={() => setEdit(true)}>
+                <Pencil />
+                Edit playlist
+              </Button>
+              <Button
+                variant="ghost"
+                aria-label="Delete playlist"
+                onClick={() => setDeleting(true)}
+              >
+                <Trash2 />
+              </Button>
+            </>
+          )}
         </div>
       </section>
       {videos.length ? (
@@ -70,6 +103,18 @@ export function PlaylistView({ id }: { id: string }) {
           {videos.map((video) => (
             <div key={video._id}>
               <VideoCard video={video} playlistId={id} />
+              {own && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-2"
+                  disabled={removal.isPending}
+                  onClick={() => removal.mutate(video._id)}
+                >
+                  <X />
+                  Remove
+                </Button>
+              )}
             </div>
           ))}
         </div>
@@ -80,6 +125,15 @@ export function PlaylistView({ id }: { id: string }) {
           href="/"
         />
       )}
+      <PlaylistForm open={edit} onOpenChange={setEdit} playlist={playlist} />
+      <ConfirmDialog
+        open={deleting}
+        onOpenChange={setDeleting}
+        title="Delete this playlist?"
+        description="The playlist will be removed. The videos themselves will stay on Studback."
+        pending={deletion.isPending}
+        onConfirm={() => deletion.mutate()}
+      />
     </>
   );
 }
