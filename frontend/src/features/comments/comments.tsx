@@ -1,15 +1,16 @@
 "use client";
 import { useState } from "react";
 import {
+  useInfiniteQuery,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "@/features/auth/types";
-
+import type { Paginated } from "@/features/videos/types";
 import { useUser } from "@/features/auth/queries";
-import { patch, remove } from "@/lib/api/client";
+import { get, patch, remove } from "@/lib/api/client";
 import { relativeTime } from "@/lib/utils";
 import { Avatar } from "@/components/shared/avatar";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,7 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import {
   EditTextDialog,
 } from "@/components/shared/text-composer";
-
+import { EmptyState, ErrorState } from "@/components/shared/states";
 import { LikeButton } from "@/features/likes/like-button";
 export interface Comment {
   _id: string;
@@ -118,5 +119,69 @@ function CommentRow({
         onConfirm={() => mutation.mutate()}
       />
     </article>
+  );
+}
+export function Comments({ videoId }: { videoId: string }) {
+  const { data: user } = useUser();
+  const client = useQueryClient();
+  const key = commentKeys.video(videoId);
+  const query = useInfiniteQuery({
+    queryKey: key,
+    initialPageParam: 1,
+    queryFn: async ({ pageParam, signal }) =>
+      (
+        await get<{ comments: Paginated<Comment> }>(
+          `/comments/${videoId}`,
+          { page: pageParam, limit: 10 },
+          signal
+        )
+      ).comments,
+    getNextPageParam: (last) =>
+      last.hasNextPage ? (last.nextPage ?? undefined) : undefined,
+  });
+  return (
+    <section className="mt-9 border-t pt-7">
+      <h2 className="mb-6 text-lg font-semibold">
+        The conversation{" "}
+        <span className="ml-2 text-sm font-normal text-muted-foreground">
+          {query.data?.pages[0]?.totalDocs ?? ""}
+        </span>
+      </h2>
+      {query.isPending ? (
+        <div aria-label="Loading comments" role="status" className="space-y-4">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="skeleton h-20" />
+          ))}
+        </div>
+      ) : query.error ? (
+        <ErrorState error={query.error} retry={() => query.refetch()} />
+      ) : query.data?.pages[0].totalDocs === 0 ? (
+        <EmptyState
+          title="Start the conversation"
+          description="A thoughtful comment can be the beginning of something good."
+        />
+      ) : (
+        <div className="divide-y">
+          {query.data?.pages
+            .flatMap((page) => page.docs)
+            .map((comment) => (
+              <CommentRow
+                key={comment._id}
+                comment={comment}
+                videoId={videoId}
+              />
+            ))}
+        </div>
+      )}
+      {query.hasNextPage && (
+        <Button
+          variant="outline"
+          disabled={query.isFetchingNextPage}
+          onClick={() => query.fetchNextPage()}
+        >
+          {query.isFetchingNextPage ? "Loading…" : "More comments"}
+        </Button>
+      )}
+    </section>
   );
 }
