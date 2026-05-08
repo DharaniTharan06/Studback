@@ -1,12 +1,23 @@
 "use client";
 import { useState } from "react";
-
+import {
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import type { User } from "@/features/auth/types";
 
 import { useUser } from "@/features/auth/queries";
-
+import { patch, remove } from "@/lib/api/client";
 import { relativeTime } from "@/lib/utils";
 import { Avatar } from "@/components/shared/avatar";
+import { Button } from "@/components/ui/button";
+import { Dropdown, MenuContent, menuItemClass } from "@/components/ui/menu";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import {
+  EditTextDialog,
+} from "@/components/shared/text-composer";
 
 import { LikeButton } from "@/features/likes/like-button";
 export interface Comment {
@@ -26,6 +37,16 @@ function CommentRow({
   const { data: user } = useUser();
   const [edit, setEdit] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const client = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: () => remove(`/comments/c/${comment._id}`),
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: commentKeys.video(videoId) });
+      toast.success("Comment deleted");
+      setDeleting(false);
+    },
+    onError: (error) => toast.error(error.message),
+  });
   const pending = comment._id.startsWith("pending-");
   return (
     <article className="flex gap-3 py-5">
@@ -51,6 +72,51 @@ function CommentRow({
           </div>
         )}
       </div>
+      {user?._id === comment.owner._id && !pending && (
+        <Dropdown.Root>
+          <Dropdown.Trigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Comment actions">
+              <MoreHorizontal />
+            </Button>
+          </Dropdown.Trigger>
+          <MenuContent>
+            <Dropdown.Item
+              className={menuItemClass}
+              onSelect={() => setEdit(true)}
+            >
+              <Pencil />
+              Edit
+            </Dropdown.Item>
+            <Dropdown.Item
+              className={menuItemClass}
+              onSelect={() => setDeleting(true)}
+            >
+              <Trash2 />
+              Delete
+            </Dropdown.Item>
+          </MenuContent>
+        </Dropdown.Root>
+      )}
+      <EditTextDialog
+        open={edit}
+        onOpenChange={setEdit}
+        content={comment.content}
+        onSave={async (content) => {
+          await patch(`/comments/c/${comment._id}`, { content });
+          await client.invalidateQueries({
+            queryKey: commentKeys.video(videoId),
+          });
+          toast.success("Comment updated");
+        }}
+      />
+      <ConfirmDialog
+        open={deleting}
+        onOpenChange={setDeleting}
+        title="Delete this comment?"
+        description="Your comment will be permanently removed."
+        pending={mutation.isPending}
+        onConfirm={() => mutation.mutate()}
+      />
     </article>
   );
 }
