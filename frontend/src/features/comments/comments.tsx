@@ -4,19 +4,21 @@ import {
   useInfiniteQuery,
   useMutation,
   useQueryClient,
+  type InfiniteData,
 } from "@tanstack/react-query";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "@/features/auth/types";
 import type { Paginated } from "@/features/videos/types";
 import { useUser } from "@/features/auth/queries";
-import { get, patch, remove } from "@/lib/api/client";
+import { get, post, patch, remove } from "@/lib/api/client";
 import { relativeTime } from "@/lib/utils";
 import { Avatar } from "@/components/shared/avatar";
 import { Button } from "@/components/ui/button";
 import { Dropdown, MenuContent, menuItemClass } from "@/components/ui/menu";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import {
+  TextComposer,
   EditTextDialog,
 } from "@/components/shared/text-composer";
 import { EmptyState, ErrorState } from "@/components/shared/states";
@@ -139,6 +141,42 @@ export function Comments({ videoId }: { videoId: string }) {
     getNextPageParam: (last) =>
       last.hasNextPage ? (last.nextPage ?? undefined) : undefined,
   });
+  const mutation = useMutation({
+    mutationFn: (content: string) => post(`/comments/${videoId}`, { content }),
+    onMutate: async (content) => {
+      await client.cancelQueries({ queryKey: key });
+      const previous =
+        client.getQueryData<InfiniteData<Paginated<Comment>>>(key);
+      if (user)
+        client.setQueryData<InfiniteData<Paginated<Comment>>>(key, (current) =>
+          current
+            ? {
+                ...current,
+                pages: current.pages.map((page, i) =>
+                  i === 0
+                    ? {
+                        ...page,
+                        totalDocs: page.totalDocs + 1,
+                        docs: [
+                          {
+                            _id: `pending-${Date.now()}`,
+                            content,
+                            owner: user,
+                            createdAt: new Date().toISOString(),
+                          },
+                          ...page.docs,
+                        ],
+                      }
+                    : page
+                ),
+              }
+            : current
+        );
+      return { previous };
+    },
+    onError: (_, __, context) => client.setQueryData(key, context?.previous),
+    onSettled: () => client.invalidateQueries({ queryKey: key }),
+  });
   return (
     <section className="mt-9 border-t pt-7">
       <h2 className="mb-6 text-lg font-semibold">
@@ -147,6 +185,20 @@ export function Comments({ videoId }: { videoId: string }) {
           {query.data?.pages[0]?.totalDocs ?? ""}
         </span>
       </h2>
+      {user && (
+        <div className="mb-5 flex gap-3">
+          <Avatar src={user.avatar} name={user.username} />
+          <div className="flex-1">
+            <TextComposer
+              label="Comment"
+              placeholder="Add your perspective…"
+              onSubmit={async (content) => {
+                await mutation.mutateAsync(content);
+              }}
+            />
+          </div>
+        </div>
+      )}
       {query.isPending ? (
         <div aria-label="Loading comments" role="status" className="space-y-4">
           {[0, 1, 2].map((i) => (
