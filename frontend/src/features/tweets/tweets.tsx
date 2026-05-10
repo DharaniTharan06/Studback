@@ -2,12 +2,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { get, post, patch, remove } from "@/lib/api/client";
 import type { User } from "@/features/auth/types";
 import { useUser } from "@/features/auth/queries";
-
+import { useSubscriptions } from "@/features/subscriptions/queries";
 import { LikeButton } from "@/features/likes/like-button";
 import { Avatar } from "@/components/shared/avatar";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import {
   EmptyState,
   ErrorState,
+  PageHeading,
 } from "@/components/shared/states";
 import { relativeTime } from "@/lib/utils";
 interface Tweet {
@@ -177,5 +178,82 @@ export function UserTweets({
         />
       )}
     </div>
+  );
+}
+export function Community() {
+  const { data: user } = useUser();
+  const subscriptions = useSubscriptions(user?._id ?? "");
+  const ids = [
+    ...new Set([
+      user?._id ?? "",
+      ...(subscriptions.data?.map((item) => item.channel._id) ?? []),
+    ]),
+  ]
+    .filter(Boolean)
+    .sort();
+  const query = useQuery({
+    queryKey: tweetKeys.circle(ids),
+    enabled: !!user && subscriptions.isSuccess,
+    queryFn: async ({ signal }) => {
+      const lists = await Promise.all(
+        ids.map((id) =>
+          get<{ tweets: Tweet[] }>(`/tweets/user/${id}`, undefined, signal)
+        )
+      );
+      return lists
+        .flatMap((item) => item.tweets)
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+    },
+  });
+  return (
+    <>
+      <PageHeading
+        eyebrow="Beyond the video"
+        title="Your circle"
+        description="Ideas and updates from you and the creators you follow."
+      />
+      <div className="grid gap-12 lg:grid-cols-[minmax(0,720px)_1fr]">
+        <section>
+          <Composer />
+          {subscriptions.error ? (
+            <ErrorState
+              error={subscriptions.error}
+              retry={() => subscriptions.refetch()}
+            />
+          ) : query.isPending ? (
+            <div
+              className="skeleton h-40"
+              role="status"
+              aria-label="Loading your circle"
+            />
+          ) : query.error ? (
+            <ErrorState error={query.error} retry={() => query.refetch()} />
+          ) : query.data?.length ? (
+            query.data.map((tweet) => (
+              <TweetCard key={tweet._id} tweet={tweet} />
+            ))
+          ) : (
+            <EmptyState
+              title="Make the first connection"
+              description="Share a thought, or subscribe to a creator to see their updates here."
+            />
+          )}
+        </section>
+        <aside className="hidden max-w-xs lg:block">
+          <MessageSquare className="mb-5 size-6 text-primary" />
+          <h2 className="text-lg font-semibold tracking-tight">
+            Good ideas travel.
+          </h2>
+          <p className="mt-3 text-sm leading-7 text-muted-foreground">
+            Give a little context to what you’re creating. Ask a question. Share
+            what you’re learning. This is your space to keep the conversation
+            going.
+          </p>
+        </aside>
+      </div>
+    </>
   );
 }
