@@ -1,14 +1,16 @@
 "use client";
 import Image from "next/image";
-
+import Link from "next/link";
 import { useState } from "react";
-
+import { Settings, ArrowUpRight } from "lucide-react";
 import { useChannel } from "./queries";
 import { useUser } from "@/features/auth/queries";
 import { useFeed } from "@/features/videos/queries";
 import { ownerId } from "@/features/videos/types";
 import { VideoCard } from "@/features/videos/video-card";
-
+import { SubscribeButton } from "@/features/subscriptions/subscribe-button";
+import { UserTweets } from "@/features/tweets/tweets";
+import { PlaylistList } from "@/features/playlists/playlist-list";
 import { Avatar } from "@/components/shared/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +19,7 @@ import {
   VideoSkeletons,
 } from "@/components/shared/states";
 import { count, safeMediaUrl } from "@/lib/utils";
-
+import { TabBar } from "@/components/ui/tab-bar";
 function ChannelVideos({ id }: { id: string }) {
   const feed = useFeed();
   const videos =
@@ -116,7 +118,47 @@ export function ChannelView({ username }: { username: string }) {
             </p>
           </div>
         </div>
+        <div className="flex gap-2">
+          {own ? (
+            <>
+              <Button asChild variant="outline">
+                <Link href="/settings">
+                  <Settings />
+                  Customize
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link href="/studio">
+                  Studio
+                  <ArrowUpRight />
+                </Link>
+              </Button>
+            </>
+          ) : (
+            <SubscribeButton channel={channel} />
+          )}
+        </div>
       </div>
+      <TabBar
+        values={["Videos", "Playlists", "Community"]}
+        value={tab}
+        onValueChange={setTab}
+        label="Channel content"
+        prefix="channel"
+      />
+      <section
+        role="tabpanel"
+        id="channel-panel"
+        aria-labelledby={`channel-tab-${tab}`}
+      >
+        {tab === "Videos" ? (
+          <ChannelVideos id={channel._id} />
+        ) : tab === "Playlists" ? (
+          <PlaylistList userId={channel._id} />
+        ) : (
+          <UserTweets userId={channel._id} compose={own} />
+        )}
+      </section>
     </>
   );
 }
