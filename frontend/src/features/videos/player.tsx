@@ -1,10 +1,15 @@
 "use client";
 import { useEffect, useRef, useState, type RefObject } from "react";
-
+import {
+  Play,
+  LoaderCircle,
+  RotateCcw,
+} from "lucide-react";
 import { toast } from "sonner";
 import { usePlayer } from "@/stores/player";
 import { duration, safeMediaUrl } from "@/lib/utils";
 
+import { Button } from "@/components/ui/button";
 export function Player({
   src,
   poster,
@@ -140,6 +145,46 @@ export function Player({
           setBuffering(false);
         }}
       />
+      {!source || error ? (
+        <div
+          role="alert"
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[var(--player-background)] px-6 text-center"
+        >
+          <Play className="size-9 opacity-50" />
+          <p className="text-sm font-medium">This video couldn’t be played.</p>
+          <p className="text-xs opacity-70">
+            The media may be unavailable. Please try again.
+          </p>
+          {source && (
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setError(false);
+                videoRef.current?.load();
+              }}
+            >
+              <RotateCcw />
+              Retry playback
+            </Button>
+          )}
+        </div>
+      ) : (
+        !playing && (
+          <button
+            aria-label="Play video"
+            className="absolute top-1/2 left-1/2 flex size-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg"
+            onClick={() => void togglePlay()}
+          >
+            <Play className="ml-1 size-7 fill-current" />
+          </button>
+        )
+      )}
+      {buffering && !error && (
+        <LoaderCircle
+          aria-label="Buffering video"
+          className="pointer-events-none absolute top-1/2 left-1/2 size-9 -translate-x-1/2 -translate-y-1/2 animate-spin"
+        />
+      )}
     </div>
   );
 }
