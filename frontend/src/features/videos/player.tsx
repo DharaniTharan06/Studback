@@ -2,6 +2,9 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import {
   Play,
+  Pause,
+  Volume2,
+  VolumeX,
   LoaderCircle,
   RotateCcw,
 } from "lucide-react";
@@ -184,6 +187,58 @@ export function Player({
           aria-label="Buffering video"
           className="pointer-events-none absolute top-1/2 left-1/2 size-9 -translate-x-1/2 -translate-y-1/2 animate-spin"
         />
+      )}
+      {source && !error && (
+        <div className="player-controls absolute right-0 bottom-0 left-0 px-3 pt-10 pb-2 sm:px-4">
+          <input
+            aria-label="Seek video"
+            type="range"
+            min={0}
+            max={total || 1}
+            step={0.1}
+            value={time}
+            onChange={(event) => seek(Number(event.target.value))}
+            className="mb-1 h-4 w-full accent-primary"
+          />
+          <div className="flex items-center gap-1">
+            <button
+              aria-label={playing ? "Pause (K)" : "Play (K)"}
+              className={controls}
+              onClick={() => void togglePlay()}
+            >
+              {playing ? (
+                <Pause className="size-5 fill-current" />
+              ) : (
+                <Play className="size-5 fill-current" />
+              )}
+            </button>
+            <button
+              aria-label={muted ? "Unmute (M)" : "Mute (M)"}
+              className={controls}
+              onClick={toggleMute}
+            >
+              {muted || volume === 0 ? (
+                <VolumeX className="size-5" />
+              ) : (
+                <Volume2 className="size-5" />
+              )}
+            </button>
+            <input
+              aria-label="Volume"
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={muted ? 0 : volume}
+              onChange={(event) => setVolume(Number(event.target.value))}
+              className="hidden w-20 accent-primary sm:block"
+            />
+            <span className="ml-2 text-[11px] tabular-nums">
+              {duration(time)} / {duration(total)}
+            </span>
+            <div className="flex-1" />
+          </div>
+        </div>
       )}
     </div>
   );
