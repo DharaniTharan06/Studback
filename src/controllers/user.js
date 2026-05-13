@@ -253,12 +253,12 @@ const updateAccountDetails = asyncHandler(async(req,res)=>{
 })
 
 const updateuseravatar = asyncHandler(async(req,res)=>{
-    const coverimagelocalpath = req.file?.path
-    if(!coverimagelocalpath){
+    const avatarlocalpath = req.file?.path
+    if(!avatarlocalpath){
         throw new apiError(400,"Avatar file is missing")
     }
 
-    const avatar = await uploadtocloud(coverimagelocalpath)
+    const avatar = await uploadtocloud(avatarlocalpath)
     if(!avatar.url){
         throw new apiError(400,"Avatar upload failed")
     }
