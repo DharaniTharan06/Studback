@@ -5,13 +5,16 @@ import {
   Pause,
   Volume2,
   VolumeX,
+  Maximize,
+  Minimize,
+  RectangleHorizontal,
   LoaderCircle,
   RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { usePlayer } from "@/stores/player";
 import { duration, safeMediaUrl } from "@/lib/utils";
-
+import { Tooltip } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 export function Player({
   src,
@@ -237,6 +240,43 @@ export function Player({
               {duration(time)} / {duration(total)}
             </span>
             <div className="flex-1" />
+            <select
+              aria-label="Playback speed"
+              value={rate}
+              onChange={(event) => {
+                const speed = Number(event.target.value);
+                setRate(speed);
+                if (videoRef.current) videoRef.current.playbackRate = speed;
+              }}
+              className="h-8 rounded bg-[var(--player-overlay)] px-1 text-xs text-[var(--player-foreground)]"
+            >
+              {[0.5, 0.75, 1, 1.25, 1.5, 2].map((speed) => (
+                <option key={speed} value={speed}>
+                  {speed}×
+                </option>
+              ))}
+            </select>
+            <Tooltip label="Theater mode">
+              <button
+                className={`${controls} hidden sm:inline-flex`}
+                aria-label="Toggle theater mode"
+                aria-pressed={theater}
+                onClick={toggleTheater}
+              >
+                <RectangleHorizontal className="size-5" />
+              </button>
+            </Tooltip>
+            <button
+              aria-label={fullscreen ? "Exit fullscreen" : "Fullscreen (F)"}
+              className={controls}
+              onClick={() => void toggleFullscreen()}
+            >
+              {fullscreen ? (
+                <Minimize className="size-5" />
+              ) : (
+                <Maximize className="size-5" />
+              )}
+            </button>
           </div>
         </div>
       )}
