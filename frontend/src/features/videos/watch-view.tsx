@@ -2,15 +2,17 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
+import { ArrowRight } from "lucide-react";
 
 import { useVideo, useFeed } from "./queries";
 import { Player } from "./player";
-
+import { VideoCard } from "./video-card";
 import { usePlayer } from "@/stores/player";
 import { useChannel } from "@/features/channels/queries";
 import { useUser } from "@/features/auth/queries";
 import { SubscribeButton } from "@/features/subscriptions/subscribe-button";
 
+import { usePlaylist } from "@/features/playlists/queries";
 import { Comments } from "@/features/comments/comments";
 import { Avatar } from "@/components/shared/avatar";
 import { ErrorState, VideoSkeletons } from "@/components/shared/states";
@@ -47,6 +49,38 @@ function Creator({ username }: { username: string }) {
         ) : (
           <SubscribeButton channel={channel.data} />
         ))}
+    </div>
+  );
+}
+function Queue({ id, current }: { id: string; current: string }) {
+  const query = usePlaylist(id);
+  if (!query.data)
+    return query.error ? (
+      <ErrorState error={query.error} />
+    ) : (
+      <div className="skeleton h-32" />
+    );
+  const videos = query.data.videos.flatMap((video) =>
+    typeof video === "object" && video ? [video] : []
+  );
+  const index = videos.findIndex((video) => video._id === current);
+  const next = videos[index + 1];
+  return (
+    <div className="mb-6 rounded-xl border bg-surface p-4">
+      <Link href={`/playlist/${id}`} className="text-sm font-semibold">
+        {query.data.name}
+      </Link>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {index >= 0 ? index + 1 : "—"} of {videos.length} videos
+      </p>
+      {next && (
+        <Button asChild variant="secondary" size="sm" className="mt-3">
+          <Link href={`/watch/${next._id}?playlist=${id}`}>
+            Next in playlist
+            <ArrowRight />
+          </Link>
+        </Button>
+      )}
     </div>
   );
 }
@@ -91,8 +125,41 @@ export function WatchView({ id }: { id: string }) {
         <div className="mt-5 flex flex-wrap items-center justify-between gap-5">
           {owner?.username && <Creator username={owner.username} />}
         </div>
+        <details className="mt-6 rounded-xl bg-surface p-4">
+          <summary className="cursor-pointer text-xs font-medium">
+            {count(video.views)} views{" "}
+            {video.createdAt &&
+              ` · ${new Date(video.createdAt).toLocaleDateString("en", { month: "long", day: "numeric", year: "numeric" })}`}
+            <span className="ml-3 text-muted-foreground">Description</span>
+          </summary>
+          <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-7 text-muted-foreground">
+            {video.description || "No description provided."}
+          </p>
+        </details>
         <Comments videoId={id} />
       </div>
+      <aside
+        className={cn(theater && "border-t pt-8")}
+        aria-label="More videos"
+      >
+        {playlistId && <Queue id={playlistId} current={id} />}
+        <h2 className="mb-5 text-sm font-semibold">Keep exploring</h2>
+        {feed.isPending ? (
+          <VideoSkeletons amount={2} />
+        ) : feed.error ? (
+          <ErrorState error={feed.error} retry={() => feed.refetch()} />
+        ) : (
+          <div className={cn("space-y-6", theater && "video-grid space-y-0")}>
+            {feed.data?.pages
+              .flatMap((page) => page.docs)
+              .filter((item) => item._id !== id)
+              .slice(0, 6)
+              .map((item) => (
+                <VideoCard key={item._id} video={item} />
+              ))}
+          </div>
+        )}
+      </aside>
     </div>
   );
 }
