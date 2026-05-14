@@ -2,8 +2,8 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
-import { ArrowRight } from "lucide-react";
-
+import { Share2, ListPlus, Copy, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
 import { useVideo, useFeed } from "./queries";
 import { Player } from "./player";
 import { VideoCard } from "./video-card";
@@ -11,13 +11,14 @@ import { usePlayer } from "@/stores/player";
 import { useChannel } from "@/features/channels/queries";
 import { useUser } from "@/features/auth/queries";
 import { SubscribeButton } from "@/features/subscriptions/subscribe-button";
-
+import { LikeButton } from "@/features/likes/like-button";
+import { SavePlaylistDialog } from "@/features/playlists/save-dialog";
 import { usePlaylist } from "@/features/playlists/queries";
 import { Comments } from "@/features/comments/comments";
 import { Avatar } from "@/components/shared/avatar";
 import { ErrorState, VideoSkeletons } from "@/components/shared/states";
 import { Button } from "@/components/ui/button";
-
+import { Dialog } from "@/components/ui/dialog";
 import { count, cn } from "@/lib/utils";
 function Creator({ username }: { username: string }) {
   const channel = useChannel(username);
@@ -124,6 +125,17 @@ export function WatchView({ id }: { id: string }) {
         </h1>
         <div className="mt-5 flex flex-wrap items-center justify-between gap-5">
           {owner?.username && <Creator username={owner.username} />}
+          <div className="flex flex-wrap gap-2">
+            <LikeButton id={id} kind="videos" />
+            <Button variant="secondary" onClick={() => setShare(true)}>
+              <Share2 />
+              Share
+            </Button>
+            <Button variant="secondary" onClick={() => setSave(true)}>
+              <ListPlus />
+              Save
+            </Button>
+          </div>
         </div>
         <details className="mt-6 rounded-xl bg-surface p-4">
           <summary className="cursor-pointer text-xs font-medium">
@@ -160,6 +172,40 @@ export function WatchView({ id }: { id: string }) {
           </div>
         )}
       </aside>
+      <SavePlaylistDialog videoId={id} open={save} onOpenChange={setSave} />
+      <Dialog
+        open={share}
+        onOpenChange={setShare}
+        title="Pass it along"
+        description="A good video deserves good company."
+      >
+        <input
+          readOnly
+          className="input"
+          aria-label="Video link"
+          value={
+            typeof window !== "undefined"
+              ? `${window.location.origin}/watch/${id}`
+              : `/watch/${id}`
+          }
+        />
+        <Button
+          className="mt-4"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(
+                `${location.origin}/watch/${id}`
+              );
+              toast.success("Link copied");
+            } catch {
+              toast.error("Select the link above to copy it manually");
+            }
+          }}
+        >
+          <Copy />
+          Copy link
+        </Button>
+      </Dialog>
     </div>
   );
 }
