@@ -3,13 +3,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
+import { Pencil, Trash2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { studioKeys } from "./queries";
-
+import { EditVideoDialog } from "./video-form";
 import type { Video } from "@/features/videos/types";
 import { videoKeys } from "@/features/videos/queries";
-import { patch } from "@/lib/api/client";
+import { patch, remove } from "@/lib/api/client";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 
 import { count, safeMediaUrl } from "@/lib/utils";
 function ContentRow({ video }: { video: Video }) {
@@ -41,6 +43,15 @@ function ContentRow({ video }: { video: Video }) {
       toast.error(error.message);
     },
     onSettled: invalidate,
+  });
+  const deletion = useMutation({
+    mutationFn: () => remove(`/videos/${video._id}`),
+    onSuccess: () => {
+      setDeleting(false);
+      invalidate();
+      toast.success("Video deleted");
+    },
+    onError: (error) => toast.error(error.message),
   });
   return (
     <tr className="border-t">
@@ -96,6 +107,45 @@ function ContentRow({ video }: { video: Video }) {
         {video.createdAt ? new Date(video.createdAt).toLocaleDateString() : "—"}
       </td>
       <td className="px-4 text-sm tabular-nums">{count(video.views)}</td>
+      <td className="px-2">
+        <div className="flex gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={`Edit ${video.title}`}
+            onClick={() => setEdit(true)}
+          >
+            <Pencil />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={`Delete ${video.title}`}
+            onClick={() => setDeleting(true)}
+          >
+            <Trash2 />
+          </Button>
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            aria-label={`Watch ${video.title}`}
+          >
+            <Link href={`/watch/${video._id}`}>
+              <ExternalLink />
+            </Link>
+          </Button>
+        </div>
+        <EditVideoDialog video={video} open={edit} onOpenChange={setEdit} />
+        <ConfirmDialog
+          open={deleting}
+          onOpenChange={setDeleting}
+          title="Delete this video?"
+          description="The video will be permanently removed from Studback. This can’t be undone."
+          pending={deletion.isPending}
+          onConfirm={() => deletion.mutate()}
+        />
+      </td>
     </tr>
   );
 }
