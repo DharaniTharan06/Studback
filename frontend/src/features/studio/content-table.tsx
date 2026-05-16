@@ -5,14 +5,14 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Trash2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
-import { studioKeys } from "./queries";
+import { useStudioVideos, studioKeys } from "./queries";
 import { EditVideoDialog } from "./video-form";
 import type { Video } from "@/features/videos/types";
 import { videoKeys } from "@/features/videos/queries";
 import { patch, remove } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-
+import { EmptyState, ErrorState } from "@/components/shared/states";
 import { count, safeMediaUrl } from "@/lib/utils";
 function ContentRow({ video }: { video: Video }) {
   const [edit, setEdit] = useState(false);
@@ -147,5 +147,60 @@ function ContentRow({ video }: { video: Video }) {
         />
       </td>
     </tr>
+  );
+}
+export function ContentTable({ limit }: { limit?: number }) {
+  const query = useStudioVideos();
+  if (query.isPending)
+    return (
+      <div aria-label="Loading your videos" role="status" className="space-y-3">
+        {[0, 1, 2].map((i) => (
+          <div className="skeleton h-20" key={i} />
+        ))}
+      </div>
+    );
+  if (query.error)
+    return <ErrorState error={query.error} retry={() => query.refetch()} />;
+  if (!query.data?.length)
+    return (
+      <EmptyState
+        title="Every creator starts somewhere"
+        description="Upload your first video. Bring your perspective to the world."
+        href="/studio/upload"
+        action="Upload your first video"
+      />
+    );
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left">
+        <caption className="sr-only">
+          Your uploaded videos and publication status
+        </caption>
+        <thead className="text-[11px] text-muted-foreground">
+          <tr>
+            <th scope="col" className="pb-4 font-medium">
+              Video
+            </th>
+            <th scope="col" className="px-4 pb-4 font-medium">
+              Visibility
+            </th>
+            <th scope="col" className="px-4 pb-4 font-medium">
+              Uploaded
+            </th>
+            <th scope="col" className="px-4 pb-4 font-medium">
+              Views
+            </th>
+            <th scope="col" className="px-4 pb-4 font-medium">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {(limit ? query.data.slice(0, limit) : query.data).map((video) => (
+            <ContentRow key={video._id} video={video} />
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
