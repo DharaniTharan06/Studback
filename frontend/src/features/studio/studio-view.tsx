@@ -6,6 +6,7 @@ import {
   Users,
   ThumbsUp,
   Film,
+  ArrowUpRight,
   Upload,
   ArrowRight,
 } from "lucide-react";
@@ -80,6 +81,23 @@ export function StudioOverview() {
         </Button>
       </div>
       <ContentTable limit={5} />
+      <section className="ambient mt-10 flex flex-wrap items-center justify-between gap-5 rounded-xl border p-6">
+        <div>
+          <p className="eyebrow mb-2">Keep the conversation going</p>
+          <h2 className="text-xl font-semibold tracking-tight">
+            There’s more to your story.
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Share an update with your community between uploads.
+          </p>
+        </div>
+        <Button asChild variant="outline">
+          <Link href="/tweets">
+            Write a post
+            <ArrowUpRight />
+          </Link>
+        </Button>
+      </section>
     </>
   );
 }
