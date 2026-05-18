@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, ArrowLeft, Upload, Film } from "lucide-react";
 import { toast } from "sonner";
 import { api, type Envelope } from "@/lib/api/client";
-
+import { useObjectUrl } from "@/hooks/use-object-url";
 import { videoSchema } from "./video-form";
 import { studioKeys } from "./queries";
 import { videoKeys } from "@/features/videos/queries";
@@ -22,6 +22,8 @@ export function UploadView() {
   const [step, setStep] = useState(1);
   const [progress, setProgress] = useState(0);
   const [sent, setSent] = useState(0);
+  const preview = useObjectUrl(file);
+  const poster = useObjectUrl(thumbnail);
   const controller = useRef<AbortController | null>(null);
   const client = useQueryClient();
   const router = useRouter();
@@ -124,6 +126,28 @@ export function UploadView() {
                 <small className="field-error">{errors.title.message}</small>
               )}
             </label>
+            <label className="field">
+              <span>Description</span>
+              <textarea
+                className="input min-h-48"
+                placeholder="What should your viewers know?"
+                disabled={isSubmitting}
+                {...register("description")}
+              />
+              {errors.description && (
+                <small className="field-error">
+                  {errors.description.message}
+                </small>
+              )}
+            </label>
+            <FileField
+              label="Thumbnail"
+              accept="image/*"
+              file={thumbnail}
+              onChange={setThumbnail}
+              required
+              disabled={isSubmitting}
+            />
             {errors.root && (
               <p role="alert" className="field-error">
                 {errors.root.message}
@@ -144,6 +168,30 @@ export function UploadView() {
               </Button>
             </div>
           </div>
+          <aside className="overflow-hidden rounded-xl border bg-surface">
+            {preview && (
+              <video
+                controls
+                playsInline
+                src={preview}
+                poster={poster}
+                className="aspect-video w-full bg-[var(--player-background)]"
+                aria-label="Your video preview"
+              />
+            )}
+            <div className="p-5">
+              <p className="eyebrow mb-2">Your video</p>
+              <p className="break-words text-sm font-medium">{file?.name}</p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {file ? `${(file.size / 1024 / 1024).toFixed(1)} MB` : ""} ·
+                Public after publishing
+              </p>
+              <p className="mt-4 border-t pt-4 text-xs leading-6 text-muted-foreground">
+                A clear thumbnail helps the right people find your video. You
+                can change visibility anytime in your content manager.
+              </p>
+            </div>
+          </aside>
         </form>
       )}
     </>
