@@ -5,7 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ArrowLeft, Upload, Film } from "lucide-react";
+import { ArrowRight, ArrowLeft, Upload, Film, Check } from "lucide-react";
 import { toast } from "sonner";
 import { api, type Envelope } from "@/lib/api/client";
 import { useObjectUrl } from "@/hooks/use-object-url";
@@ -43,6 +43,25 @@ export function UploadView() {
         title="Bring your story to life."
         description="A thoughtful title. A great thumbnail. A perspective only you can share."
       />
+      <div className="mb-8 flex items-center gap-4 text-xs">
+        <span
+          className={`flex items-center gap-2 ${step === 1 ? "text-primary" : "text-muted-foreground"}`}
+        >
+          <span className="flex size-6 items-center justify-center rounded-full border">
+            {step === 2 ? <Check className="size-3" /> : "1"}
+          </span>
+          Select video
+        </span>
+        <span className="h-px w-12 bg-border" />
+        <span
+          className={`flex items-center gap-2 ${step === 2 ? "text-primary" : "text-muted-foreground"}`}
+        >
+          <span className="flex size-6 items-center justify-center rounded-full border">
+            2
+          </span>
+          Details & publish
+        </span>
+      </div>
       {step === 1 ? (
         <div className="max-w-2xl rounded-xl border bg-surface p-6 md:p-10">
           <Film className="mb-5 size-8 text-primary" />
@@ -148,6 +167,30 @@ export function UploadView() {
               required
               disabled={isSubmitting}
             />
+            {isSubmitting && (
+              <div
+                role="status"
+                aria-live="polite"
+                className="rounded-lg border bg-surface p-4"
+              >
+                <p className="text-sm font-medium">
+                  {progress >= 100
+                    ? "Processing your video…"
+                    : `Uploading · ${progress}%`}
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {progress >= 100
+                    ? "Your file has been sent. Studback is preparing it for playback."
+                    : `${(sent / 1024 / 1024).toFixed(1)} MB sent`}
+                </p>
+                <progress
+                  value={progress}
+                  max={100}
+                  aria-label="File transfer progress"
+                  className="mt-3 h-2 w-full accent-primary"
+                />
+              </div>
+            )}
             {errors.root && (
               <p role="alert" className="field-error">
                 {errors.root.message}
