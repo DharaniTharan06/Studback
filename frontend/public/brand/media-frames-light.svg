@@ -1,0 +1,16 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Editable vector mark" clip-path="url(#clip0_0_4)">
+<path id="Vector" d="M22 0H10C4.47715 0 0 4.47715 0 10V22C0 27.5228 4.47715 32 10 32H22C27.5228 32 32 27.5228 32 22V10C32 4.47715 27.5228 0 22 0Z" fill="#5143CC"/>
+<path id="Vector_2" d="M22 6H10C8.34315 6 7 7.34315 7 9V16C7 17.6569 8.34315 19 10 19H22C23.6569 19 25 17.6569 25 16V9C25 7.34315 23.6569 6 22 6Z" stroke="white" stroke-width="2.7"/>
+<path id="Vector_3" d="M25 22V24C25 24.5304 24.7893 25.0391 24.4142 25.4142C24.0391 25.7893 23.5304 26 23 26H9C8.46957 26 7.96086 25.7893 7.58579 25.4142C7.21071 25.0391 7 24.5304 7 24V22" stroke="white" stroke-width="2.7" stroke-linecap="round"/>
+<g id="Vector_4">
+<path d="M12 12H20Z" fill="black"/>
+<path d="M12 12H20" stroke="white" stroke-width="2.7" stroke-linecap="round"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_0_4">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>
