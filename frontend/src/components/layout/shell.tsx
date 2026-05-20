@@ -1,8 +1,8 @@
 "use client";
-
+import { useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-
+import { usePathname, useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Compass,
   Users,
@@ -12,9 +12,15 @@ import {
   MessageSquare,
   LayoutDashboard,
   Settings,
+  Menu,
 } from "lucide-react";
 
+import { useUser } from "@/features/auth/queries";
+
 import { cn } from "@/lib/utils";
+import { Brand } from "./brand";
+
+import { Button } from "@/components/ui/button";
 
 const navigation = [
   { href: "/", label: "Discover", icon: Compass, section: "Explore" },
@@ -81,5 +87,52 @@ function Navigation({
         </div>
       ))}
     </nav>
+  );
+}
+export function Shell({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const { data: user } = useUser();
+  const [compact, setCompact] = useState(false);
+  const [drawer, setDrawer] = useState(false);
+  const [query, setQuery] = useState("");
+  const search = useRef<HTMLInputElement>(null);
+  const navigationTrigger = useRef<HTMLButtonElement>(null);
+  const router = useRouter();
+  const client = useQueryClient();
+  return (
+    <>
+      <a
+        href="#main-content"
+        className="sr-only fixed top-2 left-2 z-[100] rounded-lg bg-primary p-3 text-primary-foreground focus:not-sr-only"
+      >
+        Skip to content
+      </a>
+      <header className="sticky top-0 z-30 flex h-[72px] items-center gap-2 border-b bg-background/95 px-3 backdrop-blur-md sm:gap-5 sm:px-5 md:px-7">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          aria-label="Open navigation"
+          aria-expanded={drawer}
+          aria-controls="mobile-navigation-sheet"
+          ref={navigationTrigger}
+          onClick={() => setDrawer(true)}
+        >
+          <Menu />
+        </Button>
+        <div className="shrink-0 md:w-[190px]">
+          <Brand />
+        </div>
+      </header>
+      <main
+        id="main-content"
+        className={cn(
+          "min-h-[calc(100dvh-72px)]",
+          compact ? "md:ml-[76px]" : "md:ml-[224px]"
+        )}
+      >
+        {children}
+      </main>
+    </>
   );
 }
