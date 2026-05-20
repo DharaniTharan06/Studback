@@ -300,5 +300,75 @@ const updateusercoverimage = asyncHandler(async(req,res)=>{
     .json(new apiResponse(200,user,"CoverImage updated successfully"))
 })
 
+const getuserchannelProfile = asyncHandler(async(req,res)=>{
+    const {username} = req.params
+    if(!username?.trim()){
+        throw new apiError(400, "username is missing")
+    }
+
+    const channel = await User.aggregate([
+        {
+            $match:{
+                username: username?.toLowerCase()
+            }
+        },
+        {
+            $lookup:{
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $lookup:{
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo"
+            }
+        },
+        {
+            $addFields:{
+                subscribersCount:{
+                    $size: "$subscribers"
+                },
+                channelsSubscribedToCount:{
+                    $size: "$subscribedTo"
+                },
+                isSubscribed:{
+                    $cond:{
+                        if: {$in: [req.user?._id,"$subscribers.subscriber"]},
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        {
+            $project:{
+                fullname: 1,
+                username: 1,
+                subscribersCount: 1,
+                channelsSubscribedToCount: 1,
+                isSubscribed: 1,
+                avatar: 1,
+                coverimage: 1,
+                email: 1
+            }
+        }
+    ])
+
+    if(!channel?.length){
+        throw new apiError(404,"channel does not exists")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new apiResponse(200,channel[0],"User channel fetched successfully")
+    )
+})
+
 export {registeruser,loginuser,logoutuser,refreshAccessToken,changecurrentpassword,getcurruser,
-    updateAccountDetails,updateuseravatar,updateusercoverimage}
+    updateAccountDetails,updateuseravatar,updateusercoverimage,getuserchannelProfile}
