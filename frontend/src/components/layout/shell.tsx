@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   Settings,
   Menu,
+  Search,
 } from "lucide-react";
 
 import { useUser } from "@/features/auth/queries";
@@ -99,6 +100,16 @@ export function Shell({ children }: { children: ReactNode }) {
   const navigationTrigger = useRef<HTMLButtonElement>(null);
   const router = useRouter();
   const client = useQueryClient();
+  useEffect(() => {
+    const keydown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "k") {
+        event.preventDefault();
+        search.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", keydown);
+    return () => window.removeEventListener("keydown", keydown);
+  }, []);
   return (
     <>
       <a
@@ -123,6 +134,27 @@ export function Shell({ children }: { children: ReactNode }) {
         <div className="shrink-0 md:w-[190px]">
           <Brand />
         </div>
+        <form
+          className="mx-auto hidden w-full max-w-xl sm:block"
+          role="search"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (query.trim())
+              router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+          }}
+        >
+          <div className="relative flex items-center">
+            <Search className="absolute left-4 size-4 text-muted-foreground" />
+            <input
+              ref={search}
+              aria-label="Search videos"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="A little curiosity goes a long way…"
+              className="h-10 w-full rounded-lg border bg-surface pl-11 pr-4 text-sm"
+            />
+          </div>
+        </form>
       </header>
       <main
         id="main-content"
