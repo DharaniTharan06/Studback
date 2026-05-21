@@ -30,7 +30,13 @@ import { ThemeToggle } from "./theme-toggle";
 import { Avatar } from "@/components/shared/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Dropdown, MenuContent, menuItemClass } from "@/components/ui/menu";
 import { Tooltip } from "@/components/ui/tooltip";
 const navigation = [
@@ -312,6 +318,58 @@ export function Shell({ children }: { children: ReactNode }) {
       >
         {children}
       </main>
+      <nav
+        aria-label="Mobile navigation"
+        className="fixed right-0 bottom-0 left-0 z-30 grid grid-cols-4 border-t bg-background/95 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
+      >
+        {navigation
+          .filter((item) =>
+            ["/", "/subscriptions", "/playlists", "/tweets"].includes(item.href)
+          )
+          .map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              aria-current={pathname === href ? "page" : undefined}
+              className="flex min-h-16 flex-col items-center justify-center gap-1 text-[10px] text-muted-foreground aria-[current=page]:text-primary"
+            >
+              <Icon className="size-5" />
+              {label}
+            </Link>
+          ))}
+      </nav>
+      <Sheet open={drawer} onOpenChange={setDrawer}>
+        <SheetContent
+          id="mobile-navigation-sheet"
+          side="left"
+          className="h-dvh w-[min(340px,90vw)] gap-0"
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            navigationTrigger.current?.focus();
+          }}
+        >
+          <SheetHeader className="shrink-0 border-b px-6 py-6 pr-14">
+            <SheetTitle>Explore Studback</SheetTitle>
+            <SheetDescription>
+              Your videos, community, and collection.
+            </SheetDescription>
+          </SheetHeader>
+          <ScrollArea
+            smoothWheel
+            className="min-h-0 flex-1"
+            type="auto"
+            viewportProps={{
+              tabIndex: 0,
+              role: "region",
+              "aria-label": "Mobile sidebar links",
+            }}
+          >
+            <div className="px-4 py-5 pb-[max(20px,env(safe-area-inset-bottom))]">
+              <Navigation close={() => setDrawer(false)} />
+            </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }
