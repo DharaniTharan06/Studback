@@ -16,6 +16,9 @@ import {
   Search,
   Plus,
   LogOut,
+  ArrowUpRight,
+  PanelLeftClose,
+  PanelLeftOpen,
   UserRound,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -26,9 +29,10 @@ import { Brand } from "./brand";
 import { ThemeToggle } from "./theme-toggle";
 import { Avatar } from "@/components/shared/avatar";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { Dropdown, MenuContent, menuItemClass } from "@/components/ui/menu";
-
+import { Tooltip } from "@/components/ui/tooltip";
 const navigation = [
   { href: "/", label: "Discover", icon: Compass, section: "Explore" },
   { href: "/subscriptions", label: "Subscriptions", icon: Users },
@@ -238,6 +242,67 @@ export function Shell({ children }: { children: ReactNode }) {
           )}
         </div>
       </header>
+      <aside
+        className={cn(
+          "fixed top-[72px] bottom-0 left-0 z-20 hidden min-h-0 flex-col overflow-hidden border-r bg-background md:flex",
+          compact ? "w-[76px]" : "w-[224px]"
+        )}
+      >
+        <ScrollArea
+          smoothWheel
+          className="min-h-0 flex-1"
+          type="auto"
+          viewportProps={{
+            tabIndex: 0,
+            role: "region",
+            "aria-label": "Sidebar links",
+          }}
+        >
+          <div className="flex flex-col gap-6 px-3 pt-5 pb-3">
+            <Navigation compact={compact} />
+            {!compact && (
+              <div className="rounded-lg border bg-surface p-4">
+                <p className="text-sm font-semibold">
+                  Made for your next idea.
+                </p>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  A place to watch, share, and find your people.
+                </p>
+                <Link
+                  href={user ? "/studio/upload" : "/register"}
+                  className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-primary"
+                >
+                  Start creating
+                  <ArrowUpRight className="size-3" />
+                </Link>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+        <div
+          className={cn(
+            "flex shrink-0 items-center border-t bg-background px-3 py-3",
+            compact && "justify-center"
+          )}
+        >
+          <Tooltip label={compact ? "Expand sidebar" : "Collapse sidebar"}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setCompact((value) => !value)}
+              aria-label={compact ? "Expand sidebar" : "Collapse sidebar"}
+              aria-expanded={!compact}
+            >
+              {compact ? <PanelLeftOpen /> : <PanelLeftClose />}
+            </Button>
+          </Tooltip>
+          {!compact && (
+            <span className="ml-2 text-[11px] text-muted-foreground">
+              A home for curiosity
+            </span>
+          )}
+        </div>
+      </aside>
       <main
         id="main-content"
         className={cn(
