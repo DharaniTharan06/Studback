@@ -14,14 +14,20 @@ import {
   Settings,
   Menu,
   Search,
+  Plus,
+  LogOut,
+  UserRound,
 } from "lucide-react";
-
+import { toast } from "sonner";
 import { useUser } from "@/features/auth/queries";
-
+import { post } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 import { Brand } from "./brand";
-
+import { ThemeToggle } from "./theme-toggle";
+import { Avatar } from "@/components/shared/avatar";
 import { Button } from "@/components/ui/button";
+
+import { Dropdown, MenuContent, menuItemClass } from "@/components/ui/menu";
 
 const navigation = [
   { href: "/", label: "Discover", icon: Compass, section: "Explore" },
@@ -110,6 +116,16 @@ export function Shell({ children }: { children: ReactNode }) {
     window.addEventListener("keydown", keydown);
     return () => window.removeEventListener("keydown", keydown);
   }, []);
+  async function logout() {
+    try {
+      await post("/users/logout");
+      client.clear();
+      router.push("/login");
+      toast.success("You’re signed out");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Couldn’t sign out");
+    }
+  }
   return (
     <>
       <a
@@ -155,6 +171,72 @@ export function Shell({ children }: { children: ReactNode }) {
             />
           </div>
         </form>
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="sm:hidden"
+            aria-label="Search"
+          >
+            <Link href="/search">
+              <Search />
+            </Link>
+          </Button>
+          <ThemeToggle />
+          <Button asChild variant="outline" className="hidden md:inline-flex">
+            <Link href={user ? "/studio/upload" : "/login"}>
+              <Plus />
+              Create
+            </Link>
+          </Button>
+          {user ? (
+            <Dropdown.Root>
+              <Dropdown.Trigger asChild>
+                <button aria-label="Open account menu" className="rounded-full">
+                  <Avatar
+                    src={user.avatar}
+                    name={user.fullname ?? user.username}
+                  />
+                </button>
+              </Dropdown.Trigger>
+              <MenuContent>
+                <Dropdown.Label className="border-b px-3 py-3">
+                  <p className="text-sm font-semibold">
+                    {user.fullname ?? user.username}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    @{user.username}
+                  </p>
+                </Dropdown.Label>
+                {[
+                  [`/c/${user.username}`, "Your channel", UserRound],
+                  ["/studio", "Creator Studio", LayoutDashboard],
+                  ["/settings", "Settings", Settings],
+                ].map(([href, label, Icon]) => {
+                  const ItemIcon = Icon as typeof Settings;
+                  return (
+                    <Dropdown.Item key={String(href)} asChild>
+                      <Link className={menuItemClass} href={String(href)}>
+                        <ItemIcon />
+                        {String(label)}
+                      </Link>
+                    </Dropdown.Item>
+                  );
+                })}
+                <Dropdown.Separator className="my-1 h-px bg-border" />
+                <Dropdown.Item className={menuItemClass} onSelect={logout}>
+                  <LogOut />
+                  Sign out
+                </Dropdown.Item>
+              </MenuContent>
+            </Dropdown.Root>
+          ) : (
+            <Button asChild size="sm">
+              <Link href="/login">Sign in</Link>
+            </Button>
+          )}
+        </div>
       </header>
       <main
         id="main-content"
