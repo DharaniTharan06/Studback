@@ -4,6 +4,7 @@ import {User} from "../models/user.js"
 import { uploadtocloud } from "../utils/cloudinary.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose";
 
 const generateTokens = async(userid)=>{
     try {
@@ -370,5 +371,23 @@ const getuserchannelProfile = asyncHandler(async(req,res)=>{
     )
 })
 
+const getwatchhistory = asyncHandler(async(req,res)=>{
+    const user = await User.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(req.user._id)
+            }
+        },
+        {
+            $lookup:{
+                from:"videos",
+                localField:"watchhistory",
+                foreignField: "_id",
+                as: "watchhistory"
+            }
+        }
+    ])
+})
+
 export {registeruser,loginuser,logoutuser,refreshAccessToken,changecurrentpassword,getcurruser,
-    updateAccountDetails,updateuseravatar,updateusercoverimage,getuserchannelProfile}
+    updateAccountDetails,updateuseravatar,updateusercoverimage,getuserchannelProfile,getwatchhistory}
