@@ -6,7 +6,9 @@ import errorHandler from "./middlewares/errorHandler.js"
 const app = express()
 
 app.use(cors({
-    origin: process.env.CORS_ORIGIN,
+    origin: !process.env.CORS_ORIGIN || process.env.CORS_ORIGIN.trim() === "*"
+        ? "http://localhost:3000"
+        : process.env.CORS_ORIGIN,
     credentials: true
 }))
 
