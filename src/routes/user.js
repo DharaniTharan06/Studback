@@ -1,5 +1,6 @@
 import {Router} from "express"
-import {loginuser, logoutuser, refreshAccessToken, registeruser} from "../controllers/user.js"
+import {changecurrentpassword, getcurruser, getuserchannelProfile, getwatchhistory, loginuser, logoutuser, refreshAccessToken, 
+    registeruser, updateAccountDetails, updateuseravatar, updateusercoverimage} from "../controllers/user.js"
 import {upload} from "../middlewares/multer.js"
 import {verifyjwt} from "../middlewares/auth.js"
 
@@ -32,5 +33,42 @@ router.route("/logout").post(
 
 router.route("/refresh-token").post(
     refreshAccessToken
+)
+
+router.route("/change-pwd").post(
+    verifyjwt,
+    changecurrentpassword
+)
+
+router.route("/current-user").get(
+    verifyjwt,
+    getcurruser
+)
+
+router.route("/update/details").patch(
+    verifyjwt,
+    updateAccountDetails
+)
+
+router.route("/update/avatar").patch(
+    verifyjwt,
+    upload.single("avatar"),
+    updateuseravatar
+)
+
+router.route("/update/cover-image").patch(
+    verifyjwt,
+    upload.single("coverimage"),
+    updateusercoverimage
+)
+
+router.route("/c/:username").get( //Here we have : which specifies that it is the params 
+    verifyjwt,
+    getuserchannelProfile
+)
+
+router.route("/history").get(
+    verifyjwt,
+    getwatchhistory
 )
 export default router
