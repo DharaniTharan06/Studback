@@ -383,10 +383,47 @@ const getwatchhistory = asyncHandler(async(req,res)=>{
                 from:"videos",
                 localField:"watchhistory",
                 foreignField: "_id",
-                as: "watchhistory"
+                as: "watchhistory",
+                pipeline:[
+                    {
+                        $lookup:{
+                            from:"users",
+                            localField:"owner",
+                            foreignField:"_id",
+                            as: "owner", 
+                            //This is inside a array can be accesed using owner.elmentat[0] this give the owner object
+                            pipeline:[
+                                {
+                                    $project: {
+                                        fullName: 1,
+                                        username: 1,
+                                        avatar: 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $addFields:{
+                            owner: {
+                                $first: "$owner" //This give the object directly without putting it in array
+                            }
+                        }
+                    }
+                ]
             }
         }
     ])
+
+    return res
+    .status(200)
+    .json(
+        new apiResponse(
+            200,
+            user[0].watchhistory,
+            "Watch History fetched successfully"
+        )
+    )
 })
 
 export {registeruser,loginuser,logoutuser,refreshAccessToken,changecurrentpassword,getcurruser,
