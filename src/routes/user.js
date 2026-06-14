@@ -61,7 +61,7 @@ router.route("/update/cover-image").patch(
     upload.single("coverimage"),
     updateusercoverimage
 )
-
+//Here we can also use route("/c") and use query option that if like /c?username=dharani and use req.query to get username
 router.route("/c/:username").get( //Here we have : which specifies that it is the params 
     verifyjwt,
     getuserchannelProfile
