@@ -6,7 +6,6 @@ import { apiResponse } from "../utils/ApiResponse.js"
 import asyncHandler from "../utils/asyncHandler.js"
 
 const createTweet = asyncHandler(async (req, res) => {
-    //TODO: create tweet
     const { content } = req.body
     if(!content || content.trim()===""){
         throw new apiError(400,"Field empty")
@@ -66,7 +65,6 @@ const createTweet = asyncHandler(async (req, res) => {
 })
 
 const getUserTweets = asyncHandler(async (req, res) => {
-    // TODO: get user tweets
     const { userId } = req.params
     if(!userId){
         throw new apiError(400,"User id is missing")
@@ -127,7 +125,6 @@ const getUserTweets = asyncHandler(async (req, res) => {
 })
 
 const updateTweet = asyncHandler(async (req, res) => {
-    //TODO: update tweet
     const { tweetId } = req.params
     if(!tweetId){
         throw new apiError(400,"Tweet id is missing")
@@ -171,7 +168,6 @@ const updateTweet = asyncHandler(async (req, res) => {
 })
 
 const deleteTweet = asyncHandler(async (req, res) => {
-    //TODO: delete tweet
     const { tweetId } = req.params
     if(!tweetId){
         throw new apiError(400,"Tweet id is missing")
