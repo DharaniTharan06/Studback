@@ -7,112 +7,50 @@ import { apiResponse } from "../utils/ApiResponse.js"
 import asyncHandler from "../utils/asyncHandler.js"
 
 const getChannelStats = asyncHandler(async (req, res) => {
-    const [stats] = await Video.aggregate([
-        {
-            $match: {
-                owner: req.user?._id,
-                ispublished: true
-            }
-        },
-        {
-            $group: {
-                _id: null,
-                totalVideos: {
-                    $sum: 1
-                },
-                totalViews: {
-                    $sum: "$views"
-                },
-                videoIds: {
-                    $push: "$_id"
+    const [videostats , subscribersstats] = await Promise.all([
+        Video.aggregate([
+            {
+                $match: {
+                    owner: req.user._id
                 }
-            }
-        },
-        {
-            $lookup: {
-                from: "likes",
-                let: {
-                    channelVideoIds: "$videoIds"
-                },
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: {
-                                $in: ["$video", "$$channelVideoIds"]
-                            }
-                        }
-                    },
-                    {
-                        $count: "count"
-                    }
-                ],
-                as: "likeStats"
-            }
-        },
-        {
-            $lookup: {
-                from: "subscriptions",
-                let: {
-                    channelId: req.user?._id
-                },
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: {
-                                $eq: ["$channel", "$$channelId"]
-                            }
-                        }
-                    },
-                    {
-                        $count: "count"
-                    }
-                ],
-                as: "subscriberStats"
-            }
-        },
-        {
-            $addFields: {
-                totalLikes: {
-                    $ifNull: [
-                        {
-                            $arrayElemAt: [
-                                "$likeStats.count",
-                                0
-                            ]
-                        },
-                        0
-                    ]
-                },
-                totalSubscribers: {
-                    $ifNull: [
-                        {
-                            $arrayElemAt: [
-                                "$subscriberStats.count",
-                                0
-                            ]
-                        },
-                        0
-                    ]
+            },
+            {
+                $lookup: {
+                    from:"likes",
+                    localField: "_id",
+                    foreignField: "video",
+                    as: "Videolikes"
                 }
-            }
-        },
-        {
-            $project: {
-                _id: 0,
-                videoIds: 0,
-                likeStats: 0,
-                subscriberStats: 0
-            }
-        }
+            },
+            {
+                $group: {
+                    _id:null,
+                    totalVideos: {
+                        $sum: 1
+                    },
+                    totalViews: {
+                        $sum: "$views"
+                    },
+                    totalLikes: {
+                        $sum: {
+                            $size: "$Videolikes"
+                        }
+                    }
+                }
+            },
+        ]),
+        Subscription.countDocuments({
+            channel: req.user._id
+        })
     ])
 
-    const channelStats = stats || {
-        totalVideos: 0,
-        totalViews: 0,
-        totalLikes: 0,
-        totalSubscribers: await Subscription.countDocuments({
-            channel: req.user?._id
-        })
+    const stats = videostats[0]
+
+    const channelStats = {
+        totalVideos: stats?.totalVideos || 0,
+        totalViews: stats?.totalViews || 0,
+        totalLikes: stats?.totalLikes || 0,
+        totalSubscribers: subscribersstats || 0
     }
 
     return res
