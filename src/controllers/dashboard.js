@@ -67,18 +67,16 @@ const getChannelStats = asyncHandler(async (req, res) => {
 })
 
 const getChannelVideos = asyncHandler(async (req, res) => {
-    const videos = await Video.aggregate([
+    const videos = await Video.find(
         {
-            $match: {
-                owner: req.user?._id
-            }
-        },
-        {
-            $sort: {
-                createdAt: -1
-            }
+            owner: req.user._id
         }
-    ])
+    )
+    .sort(
+        {
+            createdAt: -1
+        }
+    )
 
     return res
     .status(200)
