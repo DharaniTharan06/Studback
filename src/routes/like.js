@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getLikedVideos, toggleCommentLike, toggleVideoLike, toggleTweetLike } from "../controllers/like.js"
+import { getLikedVideos, toggleCommentLike, toggleVideoLike, toggleTweetLike, getLikedComments, getLikedTweets } from "../controllers/like.js"
 import { verifyjwt } from "../middlewares/auth.js"
 
 const router = Router();
@@ -19,6 +19,14 @@ router.route("/toggle/t/:tweetId").post(
 
 router.route("/videos").get(
     getLikedVideos
+);
+
+router.route("/comments").get(
+    getLikedComments
+);
+
+router.route("/tweets").get(
+    getLikedTweets
 );
 
 export default router
