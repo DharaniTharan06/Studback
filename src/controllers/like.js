@@ -127,7 +127,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 const getLikedVideos = asyncHandler(async (req, res) => {
     const userId = req.user._id
 
-    const getAllLike = await Like.find({
+    const likes = await Like.find({
         likedby: userId,
         video: { $exists: true }
     }).populate("video")
@@ -138,7 +138,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
         new apiResponse(
         200,
         {
-            getAllLike
+            likes
         },
         "All like are shown"
         )
@@ -148,7 +148,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
 const getLikedComments = asyncHandler(async (req, res) => {
     const userId = req.user._id
 
-    const getAllLike = await Like.find({
+    const likes = await Like.find({
         likedby: userId,
         comment: { $exists: true }
     }).populate("comment")
@@ -159,7 +159,7 @@ const getLikedComments = asyncHandler(async (req, res) => {
         new apiResponse(
         200,
         {
-            getAllLike
+            likes
         },
         "All like are shown"
         )
@@ -169,7 +169,7 @@ const getLikedComments = asyncHandler(async (req, res) => {
 const getLikedTweets = asyncHandler(async (req, res) => {
     const userId = req.user._id
 
-    const getAllLike = await Like.find({
+    const likes = await Like.find({
         likedby: userId,
         tweet: { $exists: true }
     }).populate("tweet")
@@ -180,7 +180,7 @@ const getLikedTweets = asyncHandler(async (req, res) => {
         new apiResponse(
         200,
         {
-            getAllLike
+            likes
         },
         "All like are shown"
         )
