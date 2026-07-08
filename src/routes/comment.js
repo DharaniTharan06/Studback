@@ -5,6 +5,14 @@ import { verifyjwt } from "../middlewares/auth.js"
 const router = Router();
 router.use(verifyjwt); // Apply verifyJWT middleware to all routes in this file
 
+router.route("/c/:commentId")
+    .delete(
+        deleteComment
+    )
+    .patch(
+        updateComment
+    );
+    
 router.route("/:videoId")
     .get(
         getVideoComments
@@ -13,12 +21,5 @@ router.route("/:videoId")
         addComment
     );
 
-router.route("/c/:commentId")
-    .delete(
-        deleteComment
-    )
-    .patch(
-        updateComment
-    );
 
 export default router

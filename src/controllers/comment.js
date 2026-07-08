@@ -7,8 +7,9 @@ import asyncHandler from "../utils/asyncHandler.js"
 
 const getVideoComments = asyncHandler(async (req, res) => {
     const {videoId} = req.params
-    const page = Number(req.query.page) || 1
-    const limit = Number(req.query.limit) || 10
+    let { page=1,limit=10} = req.query
+    page = Number(page) || 1
+    limit = Number(limit) || 10
 
     if(!isValidObjectId(videoId)){
         throw new apiError(400,"The videoid is invalid")
