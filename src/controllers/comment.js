@@ -145,7 +145,6 @@ const updateComment = asyncHandler(async (req, res) => {
 })
 
 const deleteComment = asyncHandler(async (req, res) => {
-    // TODO: delete a comment
     const { commentId } = req.params
     const userId = req.user._id
     if(!isValidObjectId(commentId)){
