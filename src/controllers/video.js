@@ -9,7 +9,6 @@ import { uploadtocloud } from "../utils/cloudinary.js"
 
 const getAllVideos = asyncHandler(async (req, res) => {
     let { page = 1, limit = 10, query, sortBy, sortType } = req.query
-    const userId  = req.user._id
 
     const allowedSortFields = [
         "createdAt",
@@ -33,7 +32,6 @@ const getAllVideos = asyncHandler(async (req, res) => {
     const pipeline = [
         {
             $match:{
-                owner: new mongoose.Types.ObjectId(userId),
                 ispublished: true
             }
         } 
@@ -150,6 +148,14 @@ const getVideoById = asyncHandler(async (req, res) => {
     .populate("owner","username")
     if(!video){
         throw new apiError(404,"Video not found")
+    }
+    if (!video.ispublished && !video.owner._id.equals(req.user._id)) {
+        throw new apiError(403, "Video not available")
+    }
+
+    if (!video.owner._id.equals(req.user._id)) {
+        video.views += 1;
+        await video.save();
     }
 
     return res
