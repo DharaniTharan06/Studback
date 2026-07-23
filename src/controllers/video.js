@@ -8,13 +8,135 @@ import { uploadtocloud } from "../utils/cloudinary.js"
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
-    //TODO: get all videos based on query, sort, pagination
+    let { page = 1, limit = 10, query, sortBy, sortType } = req.query
+    const userId  = req.user._id
+
+    const allowedSortFields = [
+        "createdAt",
+        "updatedAt",
+        "views",
+        "title",
+        "duration"
+    ]
+
+    page = Number(page) || 1
+    limit = Number(limit) || 10
+
+    sortBy = sortBy?.trim() || "createdAt"
+    if(!(allowedSortFields.includes(sortBy))){
+        sortBy = "createdAt"
+    }
+
+    sortType = sortType?.trim() || ''
+    sortType = sortType.toLowerCase() === "asc"? 1:-1;
+
+    const pipeline = [
+        {
+            $match:{
+                owner: new mongoose.Types.ObjectId(userId),
+                ispublished: true
+            }
+        } 
+    ] 
+
+    if(query?.trim()){
+        pipeline.push({
+            $match:{
+                $or:[
+                    {
+                        title:{
+                            $regex: query.trim(),
+                            $options: "i"
+                        }
+                    },
+                    {
+                        description:{
+                            $regex: query.trim(),
+                            $options: "i"
+                        }
+                    }
+                ]
+            }
+        })
+    }
+
+    pipeline.push({
+        $sort:{
+            [sortBy]: sortType
+        }
+    })
+
+    const aggregate = Video.aggregate(pipeline)
+    const options = {
+        page,
+        limit
+    }
+    const videos = await Video.aggregatePaginate(aggregate,options)
+
+    return res
+    .status(200)
+    .json(
+        new apiResponse(
+            200,
+            {
+                video: videos
+            },
+            "These are all the videos from this user"
+        )
+    )
 })
 
 const publishAVideo = asyncHandler(async (req, res) => {
-    const { title, description} = req.body
-    // TODO: get video, upload to cloudinary, create video
+    let { title, description} = req.body
+    const userId = req.user._id
+
+    if(!title || title.trim()===""){
+        throw new apiError(400,"Title Field empty")
+    }
+    if(!description || description.trim()===""){
+        throw new apiError(400,"Description Field empty")
+    }
+    title = title.trim()
+    description = description.trim()
+
+    const videoFile = req.files?.videoFile?.[0]?.path
+    if(!videoFile){
+        throw new apiError(400,"Video file is missing")
+    }
+    const video = await uploadtocloud(videoFile)
+    if(!video){
+        throw new apiError(400,"Video upload failed")
+    }
+
+    const thumbnailFile = req.files?.thumbnailFile?.[0]?.path
+    if(!thumbnailFile){
+        throw new apiError(400,"Thumbnail file is missing")
+    }
+    const thumbnail = await uploadtocloud(thumbnailFile)
+    if(!thumbnail){
+        throw new apiError(400,"Thumbnail upload failed")
+    }
+
+    const createdvideo = await Video.create({
+        videofile: video.url,
+        thumbnail: thumbnail.url,
+        title,
+        description,
+        duration: video.duration,
+        owner: userId
+    })
+
+    return res
+    .status(201)
+    .json(
+        new apiResponse(
+            201,
+            {
+                video: createdvideo
+            },
+            "Video published"
+        )
+    )
 })
 
 const getVideoById = asyncHandler(async (req, res) => {
@@ -82,7 +204,7 @@ const updateVideo = asyncHandler(async (req, res) => {
         }
 
         const thumbnail = await uploadtocloud(thumbnailLocalPath)
-        if(!thumbnail || !thumbnail.url){
+        if(!thumbnail){
             throw new apiError(400,"Thumbnail upload failed")
         }
         video.thumbnail = thumbnail.url
@@ -95,7 +217,7 @@ const updateVideo = asyncHandler(async (req, res) => {
     .json(new apiResponse(
         200,
         {
-            video
+            video: video
         },
         "Details updated successfully"
     ))
