@@ -1,6 +1,7 @@
 import express from "express"
 import cors from "cors"
 import cookiesParser from "cookie-parser"
+import errorHandler from "./middlewares/errorHandler.js"
 
 const app = express()
 
@@ -42,5 +43,6 @@ app.use("/api/v1/likes", likeRouter)
 app.use("/api/v1/playlist", playlistRouter)
 app.use("/api/v1/dashboard", dashboardRouter)
 
+app.use(errorHandler);
 
 export { app };
