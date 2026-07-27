@@ -97,16 +97,20 @@ const publishAVideo = asyncHandler(async (req, res) => {
     title = title.trim()
     description = description.trim()
 
-    const videoFile = req.files?.videoFile?.[0]?.path
+    const videoFile = req.files?.videoFile[0]?.path
     if(!videoFile){
         throw new apiError(400,"Video file is missing")
     }
+    if (!req.files.videoFile[0].mimetype.startsWith("video/")) {
+        throw new apiError(400, "Only video files are allowed");
+    }
+    
     const video = await uploadtocloud(videoFile)
     if(!video){
         throw new apiError(400,"Video upload failed")
     }
 
-    const thumbnailFile = req.files?.thumbnailFile?.[0]?.path
+    const thumbnailFile = req.files?.thumbnailFile[0]?.path
     if(!thumbnailFile){
         throw new apiError(400,"Thumbnail file is missing")
     }
