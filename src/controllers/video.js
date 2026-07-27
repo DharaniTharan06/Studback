@@ -79,7 +79,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
             {
                 video: videos
             },
-            "These are all the videos from this user"
+            "These are all the videos"
         )
     )
 })
