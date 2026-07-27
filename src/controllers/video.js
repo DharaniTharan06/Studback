@@ -77,7 +77,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
         new apiResponse(
             200,
             {
-                video: videos
+                videos: videos
             },
             "These are all the videos"
         )
