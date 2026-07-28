@@ -5,7 +5,7 @@ import {verifyjwt} from "../middlewares/auth.js"
 const router = Router();
 router.use(verifyjwt);// Apply verifyJWT middleware to all routes in this file
 
-router.route("/c/:channelId")
+router.route("/c/:channelId") //Here channelId is actually userid
     .get(
         getUserChannelSubscribers
     )
@@ -13,7 +13,7 @@ router.route("/c/:channelId")
         toggleSubscription
     );
 
-router.route("/u/:subscriberId").get(
+router.route("/u/:subscriberId").get( //Here subscriberId is actully userid
     getSubscribedChannels
 );
 
